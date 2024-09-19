@@ -32,6 +32,5 @@ jobs:
           echo "Total tests: $total_tests" >> $GITHUB_STEP_SUMMARY
           failed_tests=$(grep -o 'test result: FAILED [0-9]\+' test_output.txt | grep -o '[0-9]\+')
           echo "Failed tests: $failed_tests" >> $GITHUB_STEP_SUMMARY
-          # Passed tests
           passed_tests=$(grep -o 'test result: ok [0-9]\+' test_output.txt | grep -o '[0-9]\+')
           echo "Passed tests: $passed_tests" >> $GITHUB_STEP_SUMMARY
