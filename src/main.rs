@@ -2,7 +2,7 @@ use sylt_2d::{
     body::Body,
     collide::collide,
     draw::{
-        add_box, add_line, draw_collision_result, draw_grid, draw_rectangle, get_styles, make_grid,
+        add_box, draw_collision_result, draw_grid, get_styles, make_grid,
     },
     math_utils::Vec2,
 };

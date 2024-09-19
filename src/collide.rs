@@ -181,24 +181,22 @@ fn compute_incident_edge(h: &Vec2, pos: &Vec2, rot: &Mat2x2, normal: &Vec2) -> [
             c2.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
             c2.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
         }
+    } else if n.y.signum() > 0.0 {
+        c1.v = Vec2::new(h.x, h.y);
+        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
+        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
+
+        c2.v = Vec2::new(-h.x, h.y);
+        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
+        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
     } else {
-        if n.y.signum() > 0.0 {
-            c1.v = Vec2::new(h.x, h.y);
-            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
-            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
+        c1.v = Vec2::new(-h.x, -h.y);
+        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
+        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
 
-            c2.v = Vec2::new(-h.x, h.y);
-            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
-            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
-        } else {
-            c1.v = Vec2::new(-h.x, -h.y);
-            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
-            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
-
-            c2.v = Vec2::new(h.x, -h.y);
-            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
-            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
-        }
+        c2.v = Vec2::new(h.x, -h.y);
+        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
+        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
     }
 
     c1.v = *pos + (*rot * c1.v);
@@ -263,14 +261,14 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
         normal = if d_b.y > 0.0 { rot_b.col2 } else { -rot_b.col2 };
     }
 
-    let mut front_normal;
-    let mut side_normal;
-    let mut neg_side;
-    let mut pos_side;
-    let mut neg_edge;
-    let mut pos_edge;
-    let mut front;
-    let mut side;
+    let front_normal;
+    let side_normal;
+    let neg_side;
+    let pos_side;
+    let neg_edge;
+    let pos_edge;
+    let front;
+    let side;
 
     let incident_edge = match axis {
         Axis::FaceAX => {
@@ -352,8 +350,8 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
                 flip(&mut clip_points2[i].fp);
             }
             let contact = Contact {
-                separation: separation,
-                normal: normal,
+                separation,
+                normal,
                 position: clip_points2[i].v - front_normal * separation,
                 feature: clip_points2[i].fp,
                 ..Contact::default()
@@ -368,8 +366,8 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::arbiter::{EdgeNumbers, Edges, FeaturePair};
-    use crate::draw::{add_box, add_line, draw_collision_result, draw_grid, get_styles, make_grid};
+    
+    use crate::draw::{add_box, draw_collision_result, draw_grid, get_styles, make_grid};
     use crate::math_utils::Vec2;
 
     #[test]

@@ -16,6 +16,12 @@ pub struct Body {
     pub inv_moi: f32,
 }
 
+impl Default for Body {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Body {
     pub fn new() -> Self {
         Self {

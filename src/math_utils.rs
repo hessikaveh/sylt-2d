@@ -208,8 +208,8 @@ mod tests {
     fn add_sub_ops() {
         let pos1 = Vec2::new(0.0, 1.0);
         let pos2 = Vec2::new(3.2, 2.9);
-        assert_eq!(pos1.clone() + pos2.clone(), Vec2::new(3.2, 3.9));
-        assert_eq!(pos1.clone() - pos2, Vec2::new(-3.2, -1.9000001));
+        assert_eq!(pos1 + pos2, Vec2::new(3.2, 3.9));
+        assert_eq!(pos1 - pos2, Vec2::new(-3.2, -1.9000001));
         assert_eq!(pos1 * 2.0, Vec2::new(0.0, 2.0));
     }
 

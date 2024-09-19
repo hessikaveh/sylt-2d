@@ -206,7 +206,7 @@ pub fn make_grid(grid_size: usize) -> Vec<Vec<StyledSymbol>> {
             let y_label = format!("{:2}", i);
 
             // Set x-axis labels
-            if let Some(ch) = x_label.chars().nth(0) {
+            if let Some(ch) = x_label.chars().next() {
                 grid[grid_size - 1][i] = create_styled_symbol(ch, LABEL_STYLE);
             }
             if let Some(ch) = x_label.chars().nth(1) {
@@ -214,7 +214,7 @@ pub fn make_grid(grid_size: usize) -> Vec<Vec<StyledSymbol>> {
             }
 
             // Set y-axis labels
-            if let Some(ch) = y_label.chars().nth(0) {
+            if let Some(ch) = y_label.chars().next() {
                 grid[i][0] = create_styled_symbol(ch, LABEL_STYLE);
             }
             if let Some(ch) = y_label.chars().nth(1) {
@@ -261,8 +261,8 @@ pub fn add_line(
 
         if x < grid.len() && y < grid[0].len() {
             grid[y][x] = StyledSymbol {
-                symbol: symbol,
-                style: style,
+                symbol,
+                style,
             };
         }
     }
@@ -280,8 +280,8 @@ pub fn add_point(
 
     if x < grid.len() && y < grid[0].len() {
         grid[y][x] = StyledSymbol {
-            symbol: symbol,
-            style: style,
+            symbol,
+            style,
         };
     }
 
@@ -323,7 +323,7 @@ pub fn add_box(
     if center.0 < grid.len() && center.1 < grid[0].len() {
         grid[center.1][center.0] = StyledSymbol {
             symbol: 'O',
-            style: style,
+            style,
         };
     }
 }
@@ -448,7 +448,7 @@ pub fn draw_collision_result(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::math_utils::{Mat2x2, Vec2};
+    
     #[test]
     fn test_color_style_to_ansi() {
         let style = ColorStyle {
