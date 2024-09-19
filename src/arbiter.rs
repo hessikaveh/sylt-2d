@@ -46,9 +46,9 @@ pub struct Contact {
     pub r1: Vec2,
     pub r2: Vec2,
     pub separation: f32,
-    pub Pn: f32,  // sum of impulse in the direction of normal
-    pub Pt: f32,  // sum of impulse in the direction of tangent
-    pub Pnb: f32, // sum of impulse for position bias
+    pub pn: f32,  // sum of impulse in the direction of normal
+    pub pt: f32,  // sum of impulse in the direction of tangent
+    pub pnb: f32, // sum of impulse for position bias
     pub mass_normal: f32,
     pub mass_tangent: f32,
     pub bias: f32,
@@ -63,9 +63,9 @@ impl Default for Contact {
             r1: Vec2::new(0.0, 0.0),
             r2: Vec2::new(0.0, 0.0),
             separation: Default::default(),
-            Pn: Default::default(),
-            Pt: Default::default(),
-            Pnb: Default::default(),
+            pn: Default::default(),
+            pt: Default::default(),
+            pnb: Default::default(),
             mass_normal: Default::default(),
             mass_tangent: Default::default(),
             bias: Default::default(),
