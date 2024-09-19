@@ -1,9 +1,7 @@
 use sylt_2d::{
     body::Body,
     collide::collide,
-    draw::{
-        add_box, draw_collision_result, draw_grid, get_styles, make_grid,
-    },
+    draw::{add_box, draw_collision_result, draw_grid, get_styles, make_grid},
     math_utils::Vec2,
 };
 
@@ -79,7 +77,7 @@ fn main() {
         println!("{:?}", contacts);
         println!("{:?}", num_contacts);
 
-        draw_collision_result(&mut grid, &box_a, &box_b, &contacts);
+        draw_collision_result(&mut grid, &contacts);
 
         // Display the grid
         draw_grid(&mut grid);

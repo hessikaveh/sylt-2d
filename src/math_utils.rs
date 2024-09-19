@@ -201,6 +201,7 @@ impl Mul for Mat2x2 {
 
 #[cfg(test)]
 mod tests {
+    use core::f32;
     use std::f32::consts::PI;
 
     use super::*;
@@ -254,7 +255,7 @@ mod tests {
         assert_eq!(res.col2.x, 0.0);
         //println!("{}", res);
         let res = mat1 + mat2;
-        assert_eq!(res.col1.x, 1.4142135);
+        assert_eq!(res.col1.x, f32::consts::SQRT_2);
         //println!("{}", res);
         let res = mat1 * pos;
         assert_eq!(res.x, 3.535534);

@@ -45,7 +45,7 @@ impl Body {
     }
 
     pub fn set_weight_mass(&mut self, weight: Vec2, mass: f32) {
-        todo!()
+        self.mass = mass;
     }
 }
 

@@ -1,6 +1,4 @@
 use crate::arbiter::Contact;
-use crate::body::Body;
-use crate::collide::ClipVertex;
 use crate::math_utils::{Mat2x2, Vec2};
 // Define an enum for text styles
 #[derive(Clone, Copy)]
@@ -36,7 +34,7 @@ pub struct ColorStyle {
 
 impl ColorStyle {
     // Method to get the ANSI escape code for the color and style
-    fn to_ansi(&self) -> String {
+    fn color_style_to_ansi(&self) -> String {
         let mut codes = Vec::new();
 
         // Add text color code
@@ -84,7 +82,7 @@ impl ColorStyle {
 
 impl std::fmt::Display for ColorStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_ansi())
+        write!(f, "{}", self.color_style_to_ansi())
     }
 }
 
@@ -173,9 +171,7 @@ pub struct StyledSymbol {
 // Define styles for drawing
 const TICK_STYLE: ColorStyle = color_style!(TextColor::Cyan, None, Some(TextStyle::Bold));
 const LABEL_STYLE: ColorStyle = color_style!(TextColor::Magenta, None, Some(TextStyle::Bold));
-const RECT_STYLE: ColorStyle = color_style!(TextColor::Yellow, None, Some(TextStyle::Bold));
 const COLLISION_STYLE: ColorStyle = color_style!(TextColor::Red, None, Some(TextStyle::Bold));
-const CLIPPING_STYLE: ColorStyle = color_style!(TextColor::Green, None, Some(TextStyle::Bold));
 
 // Define a default styled symbol
 impl Default for StyledSymbol {
@@ -331,7 +327,7 @@ pub fn draw_grid(grid: &mut Vec<Vec<StyledSymbol>>) {
 }
 
 pub fn draw_rectangle(
-    grid: &mut Vec<Vec<StyledSymbol>>,
+    grid: &mut [Vec<StyledSymbol>],
     pos: Vec2,
     size: Vec2,
     rotation: f32,
@@ -393,43 +389,7 @@ pub fn draw_rectangle(
     grid[y2][x1] = create_styled_symbol('┘', style);
 }
 
-// Draw clipping and incident edges based on collision detection
-fn draw_clipping_edges(
-    grid: &mut Vec<Vec<StyledSymbol>>,
-    clip_points: [ClipVertex; 2],
-    color_style: ColorStyle,
-) {
-    if clip_points.len() != 2 {
-        return;
-    }
-
-    let start = clip_points[0].v;
-    let end = clip_points[1].v;
-    add_line(grid, start, end, 'X', color_style);
-}
-
-pub fn draw_collision_result(
-    grid: &mut Vec<Vec<StyledSymbol>>,
-    body_a: &Body,
-    body_b: &Body,
-    contacts: &Vec<Contact>,
-) {
-    /*     // Draw rectangles for bodies
-    draw_rectangle(
-        grid,
-        body_a.position,
-        Vec2::new(body_a.width.x, body_a.width.y),
-        body_a.rotation,
-        RECT_STYLE,
-    );
-    draw_rectangle(
-        grid,
-        body_b.position,
-        Vec2::new(body_b.width.x, body_b.width.y),
-        body_b.rotation,
-        RECT_STYLE,
-    ); */
-
+pub fn draw_collision_result(grid: &mut Vec<Vec<StyledSymbol>>, contacts: &Vec<Contact>) {
     // Draw collision contacts
     for contact in contacts {
         add_point(grid, contact.position, 'C', COLLISION_STYLE);
@@ -448,7 +408,7 @@ mod tests {
             style: Some(TextStyle::Bold),
         };
 
-        let ansi_code = style.to_ansi();
+        let ansi_code = style.color_style_to_ansi();
         assert_eq!(ansi_code, "\x1b[31;44;1m", "Incorrect ANSI code generated");
     }
 
