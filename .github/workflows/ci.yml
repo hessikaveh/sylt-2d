@@ -23,7 +23,7 @@ jobs:
       - run: cargo build --verbose
       - name: Run tests and save output
         run: |
-          cargo test --all --verbose > test_output.txt
+          cargo test --all --verbose 2>&1 | tee test_output.txt
         continue-on-error: true
       - name: Generate summary
         run: |
