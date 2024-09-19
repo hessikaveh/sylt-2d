@@ -28,6 +28,10 @@ jobs:
       - name: Generate summary
         run: |
           echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "Total tests: $(grep -c 'running [0-9]\+ test' test_output.txt)" >> $GITHUB_STEP_SUMMARY
-          echo "Failed tests: $(grep -c 'test result: FAILED' test_output.txt)" >> $GITHUB_STEP_SUMMARY
-          echo "Passed tests: $(grep -c 'test result: ok' test_output.txt)" >> $GITHUB_STEP_SUMMARY
+          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
+          echo "Total tests: $total_tests" >> $GITHUB_STEP_SUMMARY
+          failed_tests=$(grep -o 'test result: FAILED [0-9]\+' test_output.txt | grep -o '[0-9]\+')
+          echo "Failed tests: $failed_tests" >> $GITHUB_STEP_SUMMARY
+          # Passed tests
+          passed_tests=$(grep -o 'test result: ok [0-9]\+' test_output.txt | grep -o '[0-9]\+')
+          echo "Passed tests: $passed_tests" >> $GITHUB_STEP_SUMMARY
