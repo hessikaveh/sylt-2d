@@ -29,6 +29,6 @@ jobs:
           total_tests=$(grep -m 1 -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
           echo "Total tests: $total_tests" >> $GITHUB_STEP_SUMMARY
           test_states=($(grep  -m 1 -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt |grep -o '[0-9]\+'))
-          echo "Failed tests: $test_states[2]" >> $GITHUB_STEP_SUMMARY
-          echo "Passed tests: $$test_states[1]" >> $GITHUB_STEP_SUMMARY
+          echo "Failed tests: ${test_states[2]}" >> $GITHUB_STEP_SUMMARY
+          echo "Passed tests: ${test_states[1]}" >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
