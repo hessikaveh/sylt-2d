@@ -232,8 +232,8 @@ pub fn make_grid(grid_size: usize) -> Vec<Vec<StyledSymbol>> {
     for i in center_x + 1..grid_size {
         grid[center_y][i] = create_styled_symbol('─', arrow_style); // Horizontal arrow line
     }
-    for i in 0..center_y {
-        grid[i][center_x] = create_styled_symbol('│', arrow_style); // Vertical arrow line
+    for grid_y in grid.iter_mut().take(center_y) {
+        grid_y[center_x] = create_styled_symbol('│', arrow_style); // Vertical arrow line
     }
 
     grid
@@ -260,10 +260,7 @@ pub fn add_line(
         let y = (y1 as f32 * (1.0 - t) + y2 as f32 * t).round() as usize;
 
         if x < grid.len() && y < grid[0].len() {
-            grid[y][x] = StyledSymbol {
-                symbol,
-                style,
-            };
+            grid[y][x] = StyledSymbol { symbol, style };
         }
     }
 
@@ -279,10 +276,7 @@ pub fn add_point(
     let (x, y) = pos_to_grid(position, grid.len() / 2);
 
     if x < grid.len() && y < grid[0].len() {
-        grid[y][x] = StyledSymbol {
-            symbol,
-            style,
-        };
+        grid[y][x] = StyledSymbol { symbol, style };
     }
 
     grid
@@ -321,10 +315,7 @@ pub fn add_box(
     // Mark the position of the box center
     let center = pos_to_grid(pos, grid.len() / 2);
     if center.0 < grid.len() && center.1 < grid[0].len() {
-        grid[center.1][center.0] = StyledSymbol {
-            symbol: 'O',
-            style,
-        };
+        grid[center.1][center.0] = StyledSymbol { symbol: 'O', style };
     }
 }
 
@@ -448,7 +439,7 @@ pub fn draw_collision_result(
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_color_style_to_ansi() {
         let style = ColorStyle {

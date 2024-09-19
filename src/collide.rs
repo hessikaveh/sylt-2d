@@ -342,18 +342,18 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
     };
     let mut num_contacts = 0;
 
-    for i in 0..2 {
-        let separation = front_normal.dot(clip_points2[i].v) - front;
+    for clip_point in &mut clip_points2 {
+        let separation = front_normal.dot(clip_point.v) - front;
 
         if separation <= 0.0 {
             if axis == Axis::FaceBX || axis == Axis::FaceBY {
-                flip(&mut clip_points2[i].fp);
+                flip(&mut clip_point.fp);
             }
             let contact = Contact {
                 separation,
                 normal,
-                position: clip_points2[i].v - front_normal * separation,
-                feature: clip_points2[i].fp,
+                position: clip_point.v - front_normal * separation,
+                feature: clip_point.fp,
                 ..Contact::default()
             };
             contacts.push(contact);
@@ -366,7 +366,7 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::draw::{add_box, draw_collision_result, draw_grid, get_styles, make_grid};
     use crate::math_utils::Vec2;
 
