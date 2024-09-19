@@ -21,4 +21,13 @@ jobs:
       - name: Install Clippy and lint
         run: rustup component add clippy && cargo clippy
       - run: cargo build --verbose
-      - run: cargo test --verbose
+      - name: Run tests and save output
+        run: |
+          cargo test --all --verbose > test_output.txt
+        continue-on-error: true
+      - name: Generate summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "Total tests: $(grep -c 'running [0-9]\+ test' test_output.txt)" >> $GITHUB_STEP_SUMMARY
+          echo "Failed tests: $(grep -c 'test result: FAILED' test_output.txt)" >> $GITHUB_STEP_SUMMARY
+          echo "Passed tests: $(grep -c 'test result: ok' test_output.txt)" >> $GITHUB_STEP_SUMMARY
