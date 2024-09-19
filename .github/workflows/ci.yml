@@ -26,10 +26,12 @@ jobs:
         continue-on-error: true
       - name: Generate summary
         run: |
-          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
+          total_tests=$(grep -m 1 -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
           echo "Total tests: $total_tests" >> $GITHUB_STEP_SUMMARY
-          failed_tests=$(grep -o 'test result: FAILED [0-9]\+' test_output.txt | grep -o '[0-9]\+')
+
+          failed_tests=$(grep -m 1 -o 'test result: FAILED [0-9]\+' test_output.txt | grep -o '[0-9]\+')
           echo "Failed tests: $failed_tests" >> $GITHUB_STEP_SUMMARY
-          passed_tests=$(grep -o 'test result: ok [0-9]\+' test_output.txt | grep -o '[0-9]\+')
+
+          passed_tests=$(grep -m 1 -o 'test result: ok [0-9]\+' test_output.txt | grep -o '[0-9]\+')
           echo "Passed tests: $passed_tests" >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
