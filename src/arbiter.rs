@@ -1,4 +1,6 @@
-use crate::{body::Body, math_utils::Vec2};
+use std::usize;
+
+use crate::{body::Body, collide::collide, math_utils::Vec2};
 
 #[derive(Debug, Clone, Copy)]
 pub enum EdgeNumbers {
@@ -39,7 +41,7 @@ impl FeaturePair {
         Self { edges, value }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Contact {
     pub position: Vec2,
     pub normal: Vec2,
@@ -74,15 +76,56 @@ impl Default for Contact {
     }
 }
 
-struct ArbiterKey {
+pub struct ArbiterKey {
     body1: Body,
     body2: Body,
 }
 
-struct Arbiter {
+pub struct Arbiter {
     body1: Body,
     body2: Body,
     friction: f32,
     num_contacts: i32,
     contacts: [Contact; 2],
+}
+
+impl Arbiter {
+    pub fn new(body_1: Body, body_2: Body) -> Self {
+        let mut contacts = Vec::<Contact>::with_capacity(2);
+        let num_contacts = collide(&mut contacts, &body_1, &body_2);
+        Self {
+            body1: body_1,
+            body2: body_2,
+            friction: f32::sqrt(body_1.friction * body_2.friction),
+            num_contacts,
+            contacts: [contacts[0], contacts[1]],
+        }
+    }
+    pub fn update(&mut self, new_contacts: &[Contact], num_new_contacts: i32) {
+        let mut merged_contacts = [Contact::default(); 2];
+        for i in 0..num_new_contacts as usize {
+            let c_new = new_contacts[i];
+            let mut k = -1;
+            for j in 0..self.num_contacts {
+                let c_old = self.contacts[j as usize];
+                if c_new.feature.value == c_old.feature.value {
+                    k = j;
+                    break;
+                }
+            }
+            if k > -1 {
+                let c_old = self.contacts[k as usize];
+                merged_contacts[i] = c_new;
+                // Add the World::warm Start condition here
+                merged_contacts[i].pn = c_old.pn;
+                merged_contacts[i].pt = c_old.pt;
+                merged_contacts[i].pnb = c_old.pnb;
+            } else {
+                merged_contacts[i] = new_contacts[i];
+            }
+        }
+        self.contacts = merged_contacts;
+        self.num_contacts = num_new_contacts;
+    }
+    pub fn pre_step() {}
 }

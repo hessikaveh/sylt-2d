@@ -1,6 +1,6 @@
 use crate::math_utils::Vec2;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Body {
     pub position: Vec2,
     pub rotation: f32,
