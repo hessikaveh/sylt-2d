@@ -5,12 +5,12 @@ use crate::body::Body;
 use crate::joint::Joint;
 use crate::math_utils::Vec2;
 
-struct World {
+pub struct World {
     gravity: Vec2,
     iterations: i32,
-    accumulate_impulse: bool,
-    warm_starting: bool,
-    position_correction: bool,
+    pub accumulate_impulse: bool,
+    pub warm_starting: bool,
+    pub position_correction: bool,
     bodies: Vec<Body>,
     joints: Vec<Joint>,
     arbiters: HashMap<ArbiterKey, Arbiter>,

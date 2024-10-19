@@ -1,1 +1,1 @@
-Implementation of Box2d-lit in rust in order to practice rust programming.
+A **Box2d-lit** implementation in Rust to practice rust programming.

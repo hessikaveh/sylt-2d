@@ -35,7 +35,7 @@ impl Display for Vec2 {
     }
 }
 
-trait Cross<T> {
+pub trait Cross<T> {
     type Output;
     fn cross(&self, rhs: T) -> Self::Output;
 }

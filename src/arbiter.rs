@@ -1,5 +1,5 @@
-use std::usize;
-
+use crate::math_utils::Cross;
+use crate::world::World;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
 
 #[derive(Debug, Clone, Copy)]
@@ -101,7 +101,7 @@ impl Arbiter {
             contacts: [contacts[0], contacts[1]],
         }
     }
-    pub fn update(&mut self, new_contacts: &[Contact], num_new_contacts: i32) {
+    pub fn update(&mut self, new_contacts: &[Contact], num_new_contacts: i32, world: &World) {
         let mut merged_contacts = [Contact::default(); 2];
         for i in 0..num_new_contacts as usize {
             let c_new = new_contacts[i];
@@ -117,9 +117,15 @@ impl Arbiter {
                 let c_old = self.contacts[k as usize];
                 merged_contacts[i] = c_new;
                 // Add the World::warm Start condition here
-                merged_contacts[i].pn = c_old.pn;
-                merged_contacts[i].pt = c_old.pt;
-                merged_contacts[i].pnb = c_old.pnb;
+                if world.warm_starting {
+                    merged_contacts[i].pn = c_old.pn;
+                    merged_contacts[i].pt = c_old.pt;
+                    merged_contacts[i].pnb = c_old.pnb;
+                } else {
+                    merged_contacts[i].pn = 0.0;
+                    merged_contacts[i].pt = 0.0;
+                    merged_contacts[i].pnb = 0.0;
+                }
             } else {
                 merged_contacts[i] = new_contacts[i];
             }
@@ -127,5 +133,42 @@ impl Arbiter {
         self.contacts = merged_contacts;
         self.num_contacts = num_new_contacts;
     }
-    pub fn pre_step() {}
+    pub fn pre_step(&mut self, inv_dt: f32, world: &World) {
+        let k_allowed_penetration = 0.0;
+        let k_bias_factor = if world.position_correction { 0.2 } else { 0.0 };
+        for i in 0..self.num_contacts as usize {
+            let r1 = self.contacts[i].position - self.body1.position;
+            let r2 = self.contacts[i].position - self.body2.position;
+
+            // pre-compute normal mass , tangent mass, and bias
+            let rn1 = r1.dot(self.contacts[i].normal);
+            let rn2 = r2.dot(self.contacts[i].normal);
+            let mut k_normal = self.body1.inv_mass + self.body2.inv_mass;
+            k_normal += self.body1.inv_moi * (r1.dot(r2) - rn1 * rn2)
+                + self.body2.inv_moi * (r2.dot(r2) - rn2 * rn2);
+            self.contacts[i].mass_normal = 1.0 / k_normal;
+
+            let tangent = (self.contacts[i].normal).cross(1.0);
+            let rt1 = r1.dot(tangent);
+            let rt2 = r2.dot(tangent);
+            let mut k_tangent = self.body1.inv_mass + self.body2.inv_mass;
+            k_tangent += self.body1.inv_moi * (r1.dot(r1) - rt1 * rt1)
+                + self.body2.inv_moi * (r2.dot(r2) - rt2 * rt2);
+            self.contacts[i].mass_tangent = 1.0 / k_tangent;
+
+            self.contacts[i].bias = -k_bias_factor
+                * inv_dt
+                * f32::min(0.0, self.contacts[i].separation + k_allowed_penetration);
+            if world.accumulate_impulse {
+                let p =
+                    self.contacts[i].normal * self.contacts[i].pn + tangent * self.contacts[i].pt;
+                self.body1.velocity = self.body1.velocity - p * self.body1.inv_mass;
+                self.body1.angular_velocity -= self.body1.inv_moi * r1.cross(p);
+
+                self.body2.velocity = self.body2.velocity - p * self.body2.inv_mass;
+                self.body2.angular_velocity -= self.body2.inv_moi * r2.cross(p);
+            }
+        }
+    }
+    pub fn apply_impulse() {}
 }
