@@ -1,7 +1,7 @@
 use crate::{
     body::Body,
     math_utils::{Cross, Mat2x2, Vec2},
-    world::World,
+    world::WorldContext,
 };
 
 #[derive(Default)]
@@ -36,7 +36,7 @@ impl Joint {
         }
     }
 
-    pub fn pre_step(mut self, world: &World, inv_dt: f32) {
+    pub fn pre_step(mut self, world_context: &WorldContext, inv_dt: f32) {
         let rot_1 = Mat2x2::new_from_angle(self.body_1.rotation);
         let rot_2 = Mat2x2::new_from_angle(self.body_2.rotation);
 
@@ -75,22 +75,32 @@ impl Joint {
         let p2 = self.body_2.position + self.r2;
         let dp = p2 - p1;
 
-        if world.position_correction {
+        if world_context.position_correction {
             self.bias = dp * inv_dt * -self.bias_factor;
         } else {
             self.bias = Vec2::default();
         }
 
-        if world.warm_starting {
+        if world_context.warm_starting {
             self.body_1.velocity = self.body_1.velocity - self.p * self.body_1.inv_mass;
-            self.body_1.angular_velocity =
-                self.body_1.angular_velocity - self.body_1.inv_moi * self.r1.cross(self.p);
+            self.body_1.angular_velocity -= self.body_1.inv_moi * self.r1.cross(self.p);
             self.body_2.velocity = self.body_2.velocity - self.p * self.body_2.inv_mass;
-            self.body_2.angular_velocity =
-                self.body_2.angular_velocity - self.body_2.inv_moi * self.r2.cross(self.p);
+            self.body_2.angular_velocity -= self.body_2.inv_moi * self.r2.cross(self.p);
         } else {
             self.p = Vec2::default();
         }
     }
-    pub fn apply_impulse(mut self) {}
+    pub fn apply_impulse(mut self) {
+        let dv = self.body_2.velocity + self.body_2.angular_velocity.cross(self.r2)
+            - self.body_1.velocity
+            - self.body_1.angular_velocity.cross(self.r1);
+        let impulse = self.m * (self.bias - dv - self.p * self.softness);
+        self.body_1.velocity = self.body_1.velocity - impulse * self.body_1.inv_mass;
+        self.body_1.angular_velocity -= self.body_1.inv_moi * self.r1.cross(impulse);
+
+        self.body_2.velocity = self.body_2.velocity - impulse * self.body_2.inv_mass;
+        self.body_2.angular_velocity -= self.body_2.inv_moi * self.r2.cross(impulse);
+
+        self.p = self.p + impulse;
+    }
 }

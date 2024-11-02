@@ -1,10 +1,18 @@
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Neg, Sub};
 
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
+}
+
+impl Hash for Vec2 {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.x.to_bits().hash(state);
+        self.y.to_bits().hash(state);
+    }
 }
 
 impl Vec2 {

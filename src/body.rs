@@ -1,6 +1,7 @@
 use crate::math_utils::Vec2;
+use std::hash::{Hash, Hasher};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct Body {
     pub position: Vec2,
     pub rotation: f32,
@@ -15,6 +16,25 @@ pub struct Body {
     pub moi: f32,
     pub inv_moi: f32,
 }
+
+impl Hash for Body {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.position.hash(state); // Hash the Vec2 by converting it to an array
+        self.rotation.to_bits().hash(state);
+        self.velocity.hash(state);
+        self.angular_velocity.to_bits().hash(state);
+        self.force.hash(state);
+        self.torque.to_bits().hash(state);
+        self.width.hash(state);
+        self.friction.to_bits().hash(state);
+        self.mass.to_bits().hash(state);
+        self.inv_mass.to_bits().hash(state);
+        self.moi.to_bits().hash(state);
+        self.inv_moi.to_bits().hash(state);
+    }
+}
+
+impl Eq for Body {}
 
 impl Default for Body {
     fn default() -> Self {

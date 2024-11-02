@@ -1,5 +1,7 @@
+use std::fmt::Pointer;
+
 use crate::math_utils::Cross;
-use crate::world::World;
+use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
 
 #[derive(Debug, Clone, Copy)]
@@ -76,32 +78,64 @@ impl Default for Contact {
     }
 }
 
+#[derive(Eq, Hash, PartialEq)]
 pub struct ArbiterKey {
     body1: Body,
     body2: Body,
+}
+
+impl ArbiterKey {
+    pub fn new(body_1: Body, body_2: Body) -> Self {
+        if body_1 < body_2 {
+            Self {
+                body1: body_1,
+                body2: body_2,
+            }
+        } else {
+            Self {
+                body1: body_2,
+                body2: body_1,
+            }
+        }
+    }
 }
 
 pub struct Arbiter {
     body1: Body,
     body2: Body,
     friction: f32,
-    num_contacts: i32,
-    contacts: [Contact; 2],
+    pub num_contacts: i32,
+    pub contacts: [Contact; 2],
 }
 
 impl Arbiter {
     pub fn new(body_1: Body, body_2: Body) -> Self {
         let mut contacts = Vec::<Contact>::with_capacity(2);
         let num_contacts = collide(&mut contacts, &body_1, &body_2);
-        Self {
-            body1: body_1,
-            body2: body_2,
-            friction: f32::sqrt(body_1.friction * body_2.friction),
-            num_contacts,
-            contacts: [contacts[0], contacts[1]],
+        if body_1 > body_2 {
+            Self {
+                body1: body_1,
+                body2: body_2,
+                friction: f32::sqrt(body_1.friction * body_2.friction),
+                num_contacts,
+                contacts: [contacts[0], contacts[1]],
+            }
+        } else {
+            Self {
+                body1: body_2,
+                body2: body_1,
+                friction: f32::sqrt(body_1.friction * body_2.friction),
+                num_contacts,
+                contacts: [contacts[0], contacts[1]],
+            }
         }
     }
-    pub fn update(&mut self, new_contacts: &[Contact], num_new_contacts: i32, world: &World) {
+    pub fn update(
+        &mut self,
+        new_contacts: &[Contact],
+        num_new_contacts: i32,
+        world_context: &WorldContext,
+    ) {
         let mut merged_contacts = [Contact::default(); 2];
         for i in 0..num_new_contacts as usize {
             let c_new = new_contacts[i];
@@ -117,7 +151,7 @@ impl Arbiter {
                 let c_old = self.contacts[k as usize];
                 merged_contacts[i] = c_new;
                 // Add the World::warm Start condition here
-                if world.warm_starting {
+                if world_context.warm_starting {
                     merged_contacts[i].pn = c_old.pn;
                     merged_contacts[i].pt = c_old.pt;
                     merged_contacts[i].pnb = c_old.pnb;
@@ -133,9 +167,13 @@ impl Arbiter {
         self.contacts = merged_contacts;
         self.num_contacts = num_new_contacts;
     }
-    pub fn pre_step(&mut self, inv_dt: f32, world: &World) {
+    pub fn pre_step(&mut self, inv_dt: f32, world_context: &WorldContext) {
         let k_allowed_penetration = 0.0;
-        let k_bias_factor = if world.position_correction { 0.2 } else { 0.0 };
+        let k_bias_factor = if world_context.position_correction {
+            0.2
+        } else {
+            0.0
+        };
         for i in 0..self.num_contacts as usize {
             let r1 = self.contacts[i].position - self.body1.position;
             let r2 = self.contacts[i].position - self.body2.position;
@@ -159,7 +197,7 @@ impl Arbiter {
             self.contacts[i].bias = -k_bias_factor
                 * inv_dt
                 * f32::min(0.0, self.contacts[i].separation + k_allowed_penetration);
-            if world.accumulate_impulse {
+            if world_context.accumulate_impulse {
                 let p =
                     self.contacts[i].normal * self.contacts[i].pn + tangent * self.contacts[i].pt;
                 self.body1.velocity = self.body1.velocity - p * self.body1.inv_mass;
