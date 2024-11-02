@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::ops::{Add, Mul, Neg, Sub};
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
@@ -109,7 +109,7 @@ impl Neg for Vec2 {
         }
     }
 }
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Mat2x2 {
     pub col1: Vec2,
     pub col2: Vec2,

@@ -15,3 +15,19 @@ pub struct World {
     joints: Vec<Joint>,
     arbiters: HashMap<ArbiterKey, Arbiter>,
 }
+
+impl World {
+    pub fn add_body(mut self, body: Body) {
+        self.bodies.push(body);
+    }
+
+    pub fn add_join(mut self, joint: Joint) {
+        self.joints.push(joint);
+    }
+
+    pub fn clear(mut self) {
+        self.bodies.clear();
+        self.joints.clear();
+        self.arbiters.clear();
+    }
+}
