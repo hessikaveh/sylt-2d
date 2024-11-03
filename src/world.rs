@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::ops::Deref;
 
 use crate::arbiter::{Arbiter, ArbiterKey};
 use crate::body::Body;
@@ -90,7 +89,40 @@ impl World {
 
         // Integrate forces.
         for body in self.bodies.iter_mut() {
+            if body.inv_mass == 0.0 {
+                continue;
+            };
             body.velocity = body.velocity + (self.gravity + body.force * body.inv_mass) * dt;
+            body.angular_velocity += body.inv_moi * body.torque * dt;
+        }
+
+        // Pefrom pre-steps
+        for arbiter in self.arbiters.iter_mut() {
+            arbiter.1.pre_step(inv_dt, &self.world_context);
+        }
+
+        for joint in self.joints.iter_mut() {
+            joint.pre_step(&self.world_context, inv_dt);
+        }
+
+        // Perfrom iterations
+        for _ in 0..self.iterations {
+            for arbiter in self.arbiters.iter_mut() {
+                arbiter.1.apply_impulse(&self.world_context);
+            }
+
+            for joint in self.joints.iter_mut() {
+                joint.apply_impulse();
+            }
+        }
+
+        // Integrate Velocities
+        for body in self.bodies.iter_mut() {
+            body.position = body.position + body.velocity * dt;
+            body.rotation += body.angular_velocity * dt;
+
+            body.force = Vec2::default();
+            body.torque = 0.0;
         }
     }
 }

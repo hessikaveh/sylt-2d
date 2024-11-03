@@ -5,6 +5,12 @@ use sylt_2d::{
     math_utils::Vec2,
 };
 
+use std::{
+    io::{self, Write},
+    thread,
+    time::Duration,
+};
+
 fn main() {
     {
         // Create the grid for visualization
@@ -76,10 +82,25 @@ fn main() {
         let num_contacts = collide(&mut contacts, &box_a, &box_b);
         println!("{:?}", contacts);
         println!("{:?}", num_contacts);
+        println!("\x1b[2j");
 
         draw_collision_result(&mut grid, &contacts);
 
         // Display the grid
         draw_grid(&mut grid);
+
+        let spinner = vec!['|', '/', '-', '\\'];
+        let delay = Duration::from_millis(100);
+
+        for _ in 0..1 {
+            // Adjust the loop count to control duration
+            for &frame in &spinner {
+                print!("\r{} Loading...", frame);
+                io::stdout().flush().unwrap(); // Flush to update the output immediately
+                thread::sleep(delay);
+            }
+        }
+
+        println!("\rDone!        "); // Clears the spinner when done
     }
 }

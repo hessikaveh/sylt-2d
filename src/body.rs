@@ -64,7 +64,7 @@ impl Body {
         self.force = self.force + force;
     }
 
-    pub fn set_weight_mass(&mut self, weight: Vec2, mass: f32) {
+    pub fn set_weight_mass(&mut self, mass: f32) {
         self.mass = mass;
     }
 }

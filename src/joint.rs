@@ -36,7 +36,7 @@ impl Joint {
         }
     }
 
-    pub fn pre_step(mut self, world_context: &WorldContext, inv_dt: f32) {
+    pub fn pre_step(&mut self, world_context: &WorldContext, inv_dt: f32) {
         let rot_1 = Mat2x2::new_from_angle(self.body_1.rotation);
         let rot_2 = Mat2x2::new_from_angle(self.body_2.rotation);
 
@@ -90,7 +90,7 @@ impl Joint {
             self.p = Vec2::default();
         }
     }
-    pub fn apply_impulse(mut self) {
+    pub fn apply_impulse(&mut self) {
         let dv = self.body_2.velocity + self.body_2.angular_velocity.cross(self.r2)
             - self.body_1.velocity
             - self.body_1.angular_velocity.cross(self.r1);

@@ -1,5 +1,3 @@
-use std::fmt::Pointer;
-
 use crate::math_utils::Cross;
 use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
@@ -208,5 +206,66 @@ impl Arbiter {
             }
         }
     }
-    pub fn apply_impulse() {}
+    pub fn apply_impulse(&mut self, world_context: &WorldContext) {
+        for i in 0..self.num_contacts as usize {
+            self.contacts[i].r1 = self.contacts[i].position - self.body1.position;
+            self.contacts[i].r2 = self.contacts[i].position - self.body2.position;
+
+            // Relative velocity at contact
+            let dv = self.body2.velocity + self.body2.angular_velocity.cross(self.contacts[i].r2)
+                - self.body1.velocity
+                - self.body1.angular_velocity.cross(self.contacts[i].r1);
+
+            // Compute normal impulse
+            let vn = dv.dot(self.contacts[i].normal);
+            let mut d_pn = self.contacts[i].mass_normal * (-vn + self.contacts[i].bias);
+
+            if world_context.accumulate_impulse {
+                // Clamp accumulated impulse
+                let pn_0 = self.contacts[i].pn;
+                self.contacts[i].pn = f32::max(pn_0 + d_pn, 0.0);
+                d_pn = self.contacts[i].pn - pn_0;
+            } else {
+                d_pn = 0.0_f32.max(d_pn);
+            }
+
+            // Apply contact impulse
+            let pn = self.contacts[i].normal * d_pn;
+
+            self.body1.velocity = self.body1.velocity - pn * self.body1.inv_mass;
+            self.body1.angular_velocity -= self.body1.inv_moi * self.contacts[i].r1.cross(pn);
+
+            self.body2.velocity = self.body2.velocity + pn * self.body2.inv_mass;
+            self.body2.angular_velocity += self.body2.inv_moi * self.contacts[i].r2.cross(pn);
+
+            // Relative velocity at contact
+            let dv = self.body2.velocity + self.body2.angular_velocity.cross(self.contacts[i].r2)
+                - self.body1.velocity
+                - self.body1.angular_velocity.cross(self.contacts[i].r1);
+
+            let tangent = self.contacts[i].normal.cross(1.0);
+            let vt = dv.dot(tangent);
+            let mut d_pt = self.contacts[i].mass_tangent * -vt;
+            if world_context.accumulate_impulse {
+                // Compute friction impulse
+                let max_pt = self.friction * self.contacts[i].pn;
+
+                // Clamp friction
+                let old_tangent_impulse = self.contacts[i].pt;
+                self.contacts[i].pt = f32::clamp(old_tangent_impulse + d_pt, -max_pt, max_pt);
+                d_pt = self.contacts[i].pt - old_tangent_impulse;
+            } else {
+                let max_pt = self.friction * d_pn;
+                d_pt = f32::clamp(d_pt, -max_pt, max_pt);
+            }
+
+            // Apply contact impulse
+            let pt = tangent * d_pt;
+
+            self.body1.velocity = self.body1.velocity - pt * self.body1.inv_mass;
+            self.body1.angular_velocity -= self.body1.inv_moi * self.contacts[i].r1.cross(pt);
+            self.body2.velocity = self.body2.velocity + pt * self.body2.inv_mass;
+            self.body2.angular_velocity -= self.body2.inv_moi * self.contacts[i].r2.cross(pt);
+        }
+    }
 }
