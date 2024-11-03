@@ -38,9 +38,9 @@ impl Eq for Body {}
 
 impl Body {
     pub fn new(width: Vec2, mass: f32) -> Self {
-        let mut inv_mass;
-        let mut inv_moi;
-        let mut moi;
+        let inv_mass;
+        let inv_moi;
+        let moi;
         if mass < f32::MAX {
             inv_mass = 1.0 / mass;
             moi = mass * (width.x * width.x + width.y * width.y) / 12.0;
