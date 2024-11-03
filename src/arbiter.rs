@@ -110,22 +110,21 @@ impl Arbiter {
     pub fn new(body_1: Body, body_2: Body) -> Self {
         let mut contacts = Vec::<Contact>::with_capacity(2);
         let num_contacts = collide(&mut contacts, &body_1, &body_2);
-        if body_1 > body_2 {
-            Self {
-                body1: body_1,
-                body2: body_2,
-                friction: f32::sqrt(body_1.friction * body_2.friction),
-                num_contacts,
-                contacts: [contacts[0], contacts[1]],
-            }
+        let contact_1 = contacts.get(0).cloned().unwrap_or_default();
+        let contact_2 = contacts.get(1).cloned().unwrap_or_default();
+
+        let (body1, body2) = if body_1 > body_2 {
+            (body_1, body_2)
         } else {
-            Self {
-                body1: body_2,
-                body2: body_1,
-                friction: f32::sqrt(body_1.friction * body_2.friction),
-                num_contacts,
-                contacts: [contacts[0], contacts[1]],
-            }
+            (body_2, body_1)
+        };
+
+        Self {
+            body1,
+            body2,
+            friction: f32::sqrt(body1.friction * body2.friction),
+            num_contacts,
+            contacts: [contact_1, contact_2],
         }
     }
     pub fn update(

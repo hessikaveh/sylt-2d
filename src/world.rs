@@ -15,9 +15,9 @@ pub struct World {
     gravity: Vec2,
     iterations: i32,
     world_context: WorldContext,
-    bodies: Vec<Body>,
-    joints: Vec<Joint>,
-    arbiters: HashMap<ArbiterKey, Arbiter>,
+    pub bodies: Vec<Body>,
+    pub joints: Vec<Joint>,
+    pub arbiters: HashMap<ArbiterKey, Arbiter>,
 }
 
 impl World {
