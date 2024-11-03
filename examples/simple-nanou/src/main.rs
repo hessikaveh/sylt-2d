@@ -33,6 +33,7 @@ fn model(app: &App) -> Model {
         .new_window()
         .view(view)
         .raw_event(raw_window_event)
+        .key_pressed(key_pressed)
         .build()
         .unwrap();
     let window = app.window(_window).unwrap();
@@ -65,8 +66,8 @@ fn demo_1(_model: &mut Model) {
     _model.world.add_body(body2);
 }
 fn update(_app: &App, _model: &mut Model, _update: Update) {
-    _model.world.step(_model.time_step);
     if _model.is_first_frame {
+        _model.world.step(_model.time_step);
         demo_1(_model);
         _model.is_first_frame = false;
     }
@@ -101,6 +102,18 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
 fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event::WindowEvent) {
     // Let egui handle things like keyboard and mouse input.
     model.egui.handle_raw_event(event);
+}
+
+fn key_pressed(app: &App, model: &mut Model, key: Key) {
+    match key {
+        Key::Right => {
+            model.world.step(model.time_step);
+        }
+        Key::Left => {
+            model.world.step(-model.time_step);
+        }
+        _other_key => {}
+    }
 }
 
 fn view(app: &App, _model: &Model, frame: Frame) {
