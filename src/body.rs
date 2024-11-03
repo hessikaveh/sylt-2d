@@ -1,7 +1,7 @@
 use crate::math_utils::Vec2;
 use std::hash::{Hash, Hasher};
 
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, PartialOrd)]
 pub struct Body {
     pub position: Vec2,
     pub rotation: f32,
@@ -36,14 +36,21 @@ impl Hash for Body {
 
 impl Eq for Body {}
 
-impl Default for Body {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Body {
-    pub fn new() -> Self {
+    pub fn new(width: Vec2, mass: f32) -> Self {
+        let mut inv_mass;
+        let mut inv_moi;
+        let mut moi;
+        if mass < f32::MAX {
+            inv_mass = 1.0 / mass;
+            moi = mass * (width.x * width.x + width.y * width.y) / 12.0;
+            inv_moi = 1.0 / moi;
+        } else {
+            inv_mass = 0.0;
+            moi = f32::MAX;
+            inv_moi = 0.0;
+        }
+
         Self {
             position: Vec2::new(0.0, 0.0),
             rotation: 0.0,
@@ -52,20 +59,16 @@ impl Body {
             force: Vec2::new(0.0, 0.0),
             torque: 0.0,
             friction: 0.0,
-            width: Vec2::new(0.0, 0.0),
-            mass: 0.0,
-            inv_mass: 0.0,
-            inv_moi: 0.0,
-            moi: 0.0,
+            width,
+            mass,
+            inv_mass,
+            inv_moi,
+            moi,
         }
     }
 
     pub fn add_force(&mut self, force: Vec2) {
         self.force = self.force + force;
-    }
-
-    pub fn set_weight_mass(&mut self, mass: f32) {
-        self.mass = mass;
     }
 }
 
@@ -74,12 +77,15 @@ mod tests {
     use super::*;
     #[test]
     fn test_body() {
-        let body = Body::new();
+        let body = Body::default();
+        println!("{:?}", body);
+
+        let body = Body::new(Vec2::new(1.0, 5.0), 50.0);
         println!("{:?}", body);
     }
     #[test]
     fn test_add_force() {
-        let mut body = Body::new();
+        let mut body = Body::default();
         body.add_force(Vec2::new(2.0, 5.3));
         assert_eq!(body.force, Vec2::new(2.0, 5.3));
     }
