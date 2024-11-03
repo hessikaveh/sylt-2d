@@ -1,3 +1,4 @@
+use nannou::image::load;
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
 use sylt_2d::body::Body;
@@ -26,6 +27,7 @@ struct Model {
     egui: Egui,
     settings: EguiSettings,
     is_first_frame: bool,
+    load_demo_flag: bool,
 }
 
 fn model(app: &App) -> Model {
@@ -53,6 +55,7 @@ fn model(app: &App) -> Model {
             position: Vec2::new(0.0, 0.0),
         },
         is_first_frame: true,
+        load_demo_flag: false,
     }
 }
 
@@ -65,12 +68,135 @@ fn demo_1(_model: &mut Model) {
     body2.position = Vec2::new(0.0, 4.0);
     _model.world.add_body(body2);
 }
+
+fn demo2(model: &mut Model) {
+    let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    body1.friction = 0.2;
+    body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
+    body1.rotation = 0.0;
+    model.world.add_body(body1);
+
+    let mut body2 = Body::new(Vec2::new(1.0, 1.0), 100.0);
+    body2.friction = 0.2;
+    body2.position = Vec2::new(9.0, 11.0);
+    body2.rotation = 0.0;
+    model.world.add_body(body2);
+
+    let mut joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0));
+    model.world.add_joint(joint);
+}
+
+fn demo3(model: &mut Model) {
+    let friction_values = [0.75, 0.5, 0.35, 0.1, 0.0];
+
+    let mut body = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    body.position = Vec2::new(0.0, -0.5 * body.width.y);
+    model.world.add_body(body);
+
+    let mut body2 = Body::new(Vec2::new(13.0, 0.25), f32::MAX);
+    body2.position = Vec2::new(-2.0, 11.0);
+    body2.rotation = -0.25;
+    model.world.add_body(body2);
+
+    // Additional bodies with varying frictions
+    for (i, &friction) in friction_values.iter().enumerate() {
+        let mut body = Body::new(Vec2::new(0.5, 0.5), 25.0);
+        body.friction = friction;
+        body.position = Vec2::new(-7.5 + 2.0 * i as f32, 14.0);
+        model.world.add_body(body);
+    }
+}
+
+fn demo4(model: &mut Model) {
+    let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    ground.friction = 0.2;
+    ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
+    model.world.add_body(ground);
+
+    for i in 0..10 {
+        let mut body = Body::new(Vec2::new(1.0, 1.0), 1.0);
+        body.friction = 0.2;
+        body.position = Vec2::new(random::<f32>() * 0.2 - 0.1, 0.51 + 1.05 * i as f32);
+        model.world.add_body(body);
+    }
+}
+
+fn demo5(model: &mut Model) {
+    let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    ground.friction = 0.2;
+    ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
+    model.world.add_body(ground);
+
+    let mut x = Vec2::new(-6.0, 0.75);
+    for i in 0..12 {
+        let mut y = x;
+        for _j in i..12 {
+            let mut body = Body::new(Vec2::new(1.0, 1.0), 10.0);
+            body.friction = 0.2;
+            body.position = y;
+            model.world.add_body(body);
+
+            y.x += 1.125;
+        }
+        x.x += 0.5625;
+        x.y += 2.0;
+    }
+}
+
+fn demo6(model: &mut Model) {
+    let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
+    model.world.add_body(body1);
+
+    let mut body2 = Body::new(Vec2::new(12.0, 0.25), 100.0);
+    body2.position = Vec2::new(0.0, 1.0);
+    model.world.add_body(body2);
+
+    let mut joint = Joint::new(body1, body2, Vec2::new(0.0, 1.0));
+    model.world.add_joint(joint);
+}
+
+fn demo7(model: &mut Model) {
+    let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    ground.friction = 0.2;
+    ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
+    model.world.add_body(ground);
+
+    let num_planks = 15;
+    let mass = 50.0;
+    let frequency_hz = 2.0;
+    let damping_ratio = 0.7;
+    let omega = 2.0 * std::f32::consts::PI * frequency_hz;
+    let d = 2.0 * mass * damping_ratio * omega;
+    let k = mass * omega * omega;
+    let time_step = 1.0 / 60.0;
+    let softness = 1.0 / (d + time_step * k);
+    let bias_factor = time_step * k / (d + time_step * k);
+
+    for i in 0..num_planks {
+        let mut plank = Body::new(Vec2::new(1.0, 0.25), mass);
+        plank.friction = 0.2;
+        plank.position = Vec2::new(-8.5 + 1.25 * i as f32, 5.0);
+        model.world.add_body(plank);
+
+        let mut joint = Joint::new(plank, ground, Vec2::new(-9.125 + 1.25 * i as f32, 5.0));
+        joint.softness = softness;
+        joint.bias_factor = bias_factor;
+        model.world.add_joint(joint);
+    }
+}
 fn update(_app: &App, _model: &mut Model, _update: Update) {
     if _model.is_first_frame {
         _model.world.step(_model.time_step);
-        demo_1(_model);
+        // Load the initial demo
+        load_demo(_model);
         _model.is_first_frame = false;
     }
+    if _model.load_demo_flag {
+        load_demo(_model);
+        _model.load_demo_flag = false;
+    }
+
     let egui = &mut _model.egui;
     let settings = &mut _model.settings;
 
@@ -78,6 +204,20 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
     let ctx = egui.begin_frame();
 
     egui::Window::new("Settings").show(&ctx, |ui| {
+        // Dropdown for selecting the demo
+        ui.label("Select Demo:");
+        egui::ComboBox::from_label("Demo Selection")
+            .selected_text(format!("Demo {}", _model.demo_index + 1))
+            .show_ui(ui, |ui| {
+                for i in 0..7 {
+                    ui.selectable_value(&mut _model.demo_index, i, format!("Demo {}", i + 1));
+                }
+            });
+
+        // Button to load the selected demo
+        if ui.button("Load Demo").clicked() {
+            _model.load_demo_flag = true;
+        }
         // Resolution slider
         ui.label("Resolution:");
         ui.add(egui::Slider::new(&mut settings.resolution, 1..=40));
@@ -99,12 +239,26 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
     });
 }
 
+fn load_demo(model: &mut Model) {
+    model.world.clear(); // Clear the current world bodies and joints
+
+    match model.demo_index {
+        0 => demo_1(model),
+        1 => demo2(model),
+        2 => demo3(model),
+        3 => demo4(model),
+        4 => demo5(model),
+        5 => demo6(model),
+        6 => demo7(model),
+        _ => {}
+    }
+}
 fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event::WindowEvent) {
     // Let egui handle things like keyboard and mouse input.
     model.egui.handle_raw_event(event);
 }
 
-fn key_pressed(app: &App, model: &mut Model, key: Key) {
+fn key_pressed(_app: &App, model: &mut Model, key: Key) {
     match key {
         Key::Right => {
             model.world.step(model.time_step);

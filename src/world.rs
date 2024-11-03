@@ -41,7 +41,7 @@ impl World {
         self.bodies.push(body);
     }
 
-    pub fn add_join(&mut self, joint: Joint) {
+    pub fn add_joint(&mut self, joint: Joint) {
         self.joints.push(joint);
     }
 
