@@ -36,9 +36,11 @@ fn model(app: &App) -> Model {
         .unwrap();
     let window = app.window(_window).unwrap();
     let egui = Egui::from_window(&window);
+    let mut world = World::new(Vec2::new(0.0, -10.0), 10);
+    world.world_context.warm_starting = false;
     Model {
         _window,
-        world: World::new(Vec2::new(0.0, -10.0), 10),
+        world,
         demo_index: 0,
         bomb: None,
         time_step: 1.0 / 60.0,
