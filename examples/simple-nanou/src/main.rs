@@ -1,21 +1,17 @@
-use nannou::image::load;
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
+use sylt_2d::arbiter::{Contact, ContactInfo};
 use sylt_2d::body::Body;
 use sylt_2d::joint::Joint;
-use sylt_2d::math_utils::{Mat2x2, Vec2};
+use sylt_2d::math_utils::Vec2;
 use sylt_2d::world::World;
-
 fn main() {
     nannou::app(model).update(update).run();
 }
 
 struct EguiSettings {
-    resolution: u32,
     scale: f32,
-    rotation: f32,
     color: Srgb<u8>,
-    position: Vec2,
 }
 
 struct Model {
@@ -48,18 +44,15 @@ fn model(app: &App) -> Model {
         time_step: 1.0 / 60.0,
         egui,
         settings: EguiSettings {
-            resolution: 10,
             scale: 5.0,
-            rotation: 0.0,
             color: WHITE,
-            position: Vec2::new(0.0, 0.0),
         },
         is_first_frame: true,
         load_demo_flag: false,
     }
 }
 
-fn demo_1(_model: &mut Model) {
+fn demo1(_model: &mut Model) {
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     _model.world.add_body(body1);
@@ -82,7 +75,7 @@ fn demo2(model: &mut Model) {
     body2.rotation = 0.0;
     model.world.add_body(body2);
 
-    let mut joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0));
+    let joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0));
     model.world.add_joint(joint);
 }
 
@@ -218,17 +211,9 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         if ui.button("Load Demo").clicked() {
             _model.load_demo_flag = true;
         }
-        // Resolution slider
-        ui.label("Resolution:");
-        ui.add(egui::Slider::new(&mut settings.resolution, 1..=40));
-
         // Scale slider
         ui.label("Scale:");
         ui.add(egui::Slider::new(&mut settings.scale, 0.0..=1000.0));
-
-        // Rotation slider
-        ui.label("Rotation:");
-        ui.add(egui::Slider::new(&mut settings.rotation, 0.0..=360.0));
 
         // Random color button
         let clicked = ui.button("Random color").clicked();
@@ -243,7 +228,7 @@ fn load_demo(model: &mut Model) {
     model.world.clear(); // Clear the current world bodies and joints
 
     match model.demo_index {
-        0 => demo_1(model),
+        0 => demo1(model),
         1 => demo2(model),
         2 => demo3(model),
         3 => demo4(model),
@@ -279,7 +264,7 @@ fn view(app: &App, _model: &Model, frame: Frame) {
         draw.rect()
             .x_y(body.position.x, body.position.y)
             .w_h(body.width.x, body.width.y)
-            .z_degrees(body.rotation)
+            .rotate(body.rotation)
             .color(if num == 0 { DARKSEAGREEN } else { ORCHID });
     }
 
@@ -296,7 +281,6 @@ fn view(app: &App, _model: &Model, frame: Frame) {
             }
         }
     }
-    frame.clear(SLATEGREY);
     draw.to_frame(app, &frame).unwrap();
     _model.egui.draw_to_frame(&frame).unwrap();
 }

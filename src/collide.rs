@@ -477,6 +477,8 @@ mod tests {
         let mut contacts = Vec::new();
         let num_contacts = collide(&mut contacts, &box_a, &box_b);
         println!("{:?}", contacts);
+        println!("\x1b[2J");
+
         draw_collision_result(&mut grid, &contacts);
         // Draw the grid
         add_line(&mut grid, Vec2::new(0.0, 0.0), face_b, '^', styles[1]);
@@ -566,6 +568,8 @@ mod tests {
         let mut contacts = Vec::new();
         let num_contacts = collide(&mut contacts, &box_a, &box_b);
         println!("{:?}", contacts);
+        println!("\x1b[2J");
+
         draw_collision_result(&mut grid, &contacts);
         // Draw the grid
         add_line(&mut grid, Vec2::new(0.0, 0.0), d_p, '.', styles[7]);
@@ -669,6 +673,8 @@ mod tests {
         let normal = if d_a.x > 0.0 { rot_a.col1 } else { -rot_a.col1 };
         println!("The normal Vector is {}", normal);
         println!("The rotation Matrix is {}", rot_a);
+        println!("\x1b[2J");
+
         add_line(&mut grid, Vec2::new(0.0, 0.0), normal, '/', styles[7]);
 
         draw_grid(&mut grid);
@@ -750,6 +756,7 @@ mod tests {
         let mut contacts = Vec::new();
         let _num_contacts = collide(&mut contacts, &box_a, &box_b);
         println!("{:?}", contacts);
+        println!("\x1b[2J");
         draw_collision_result(&mut grid, &contacts);
         // Draw the grid
         draw_grid(&mut grid);

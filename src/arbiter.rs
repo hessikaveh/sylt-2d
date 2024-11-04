@@ -30,7 +30,7 @@ impl Default for Edges {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct FeaturePair {
     pub edges: Edges,
     pub value: i32,
@@ -44,7 +44,7 @@ impl FeaturePair {
 
 pub type Contact = Option<ContactInfo>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ContactInfo {
     pub position: Vec2,
     pub normal: Vec2,
@@ -58,25 +58,6 @@ pub struct ContactInfo {
     pub mass_tangent: f32,
     pub bias: f32,
     pub feature: FeaturePair,
-}
-
-impl Default for ContactInfo {
-    fn default() -> Self {
-        Self {
-            position: Vec2::new(0.0, 0.0),
-            normal: Vec2::new(0.0, 0.0),
-            r1: Vec2::new(0.0, 0.0),
-            r2: Vec2::new(0.0, 0.0),
-            separation: Default::default(),
-            pn: Default::default(),
-            pt: Default::default(),
-            pnb: Default::default(),
-            mass_normal: Default::default(),
-            mass_tangent: Default::default(),
-            bias: Default::default(),
-            feature: FeaturePair::new(Edges::default(), 0),
-        }
-    }
 }
 
 #[derive(Eq, Hash, PartialEq)]
