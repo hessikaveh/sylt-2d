@@ -89,7 +89,7 @@ fn demo2(_model: &mut Model) {
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     _model.bodies.push(body1);
     let mut body2 = Body::new(Vec2::new(1.0, 1.0), 200.0);
-    body2.position = Vec2::new(0.0, 4.0);
+    body2.position = Vec2::new(0.0, 0.0);
     _model.bodies.push(body2);
     let _ = collide(&mut _model.contacts, &body1, &body2);
 }
@@ -285,6 +285,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         if clicked {
             settings.color = rgb(random(), random(), random());
         }
+        ui.label("Use arrows to move the box and perss Return to recalculate the contact points.");
     });
 }
 
@@ -309,8 +310,26 @@ fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event:
 
 fn key_pressed(_app: &App, model: &mut Model, key: Key) {
     match key {
-        Key::Right => {}
-        Key::Left => {}
+        Key::Right => {
+            model.bodies.get_mut(1).unwrap().position.x += 0.5;
+        }
+        Key::Left => {
+            model.bodies.get_mut(1).unwrap().position.x -= 0.5;
+        }
+        Key::Up => {
+            model.bodies.get_mut(1).unwrap().position.y += 0.5;
+        }
+        Key::Down => {
+            model.bodies.get_mut(1).unwrap().position.y -= 0.5;
+        }
+        Key::Return => {
+            model.contacts.clear();
+            let _ = collide(
+                &mut model.contacts,
+                model.bodies.get(0).unwrap(),
+                model.bodies.get(1).unwrap(),
+            );
+        }
         _other_key => {}
     }
 }
