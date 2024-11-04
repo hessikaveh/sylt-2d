@@ -55,12 +55,12 @@ impl World {
         for i in 0..self.bodies.len() {
             let body_i = self.bodies[i];
 
-            for j in 0..self.bodies.len() {
+            for j in (i + 1)..self.bodies.len() {
                 let body_j = self.bodies[j];
                 if body_i.inv_mass == 0.0 && body_j.inv_mass == 0.0 {
                     continue;
                 };
-                let new_arbiter = Arbiter::new(body_i, body_j);
+                let new_arbiter = Arbiter::new(self.bodies[i], self.bodies[j]);
                 let key = ArbiterKey::new(body_i, body_j);
 
                 if new_arbiter.num_contacts > 0 {
@@ -97,8 +97,8 @@ impl World {
         }
 
         // Pefrom pre-steps
-        for arbiter in self.arbiters.iter_mut() {
-            arbiter.1.pre_step(inv_dt, &self.world_context);
+        for (_, arbiter) in self.arbiters.iter_mut() {
+            arbiter.pre_step(inv_dt, &self.world_context);
         }
 
         for joint in self.joints.iter_mut() {
@@ -107,8 +107,8 @@ impl World {
 
         // Perfrom iterations
         for _ in 0..self.iterations {
-            for arbiter in self.arbiters.iter_mut() {
-                arbiter.1.apply_impulse(&self.world_context);
+            for (_, arbiter) in self.arbiters.iter_mut() {
+                arbiter.apply_impulse(&self.world_context);
             }
 
             for joint in self.joints.iter_mut() {

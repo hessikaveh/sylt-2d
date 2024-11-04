@@ -1,6 +1,6 @@
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
-use sylt_2d::{arbiter::Contact, body::Body, collide::collide, math_utils::Vec2};
+use sylt_2d::{arbiter::Contact, body::Body, collide::collide, math_utils::Vec2, world};
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -329,6 +329,7 @@ fn key_pressed(_app: &App, model: &mut Model, key: Key) {
                 model.bodies.get(0).unwrap(),
                 model.bodies.get(1).unwrap(),
             );
+            println!("Contacts {:?}", model.contacts);
         }
         _other_key => {}
     }
@@ -354,6 +355,14 @@ fn view(app: &App, _model: &Model, frame: Frame) {
                     .x_y(contact.position.x, contact.position.y)
                     .radius(0.1)
                     .color(settings.color);
+                draw.arrow()
+                    .start(pt2(contact.position.x, contact.position.y))
+                    .end(pt2(
+                        contact.position.x + contact.normal.x,
+                        contact.position.y + contact.normal.y,
+                    ))
+                    .weight(0.05)
+                    .color(LIGHTSALMON);
             }
             None => (),
         }

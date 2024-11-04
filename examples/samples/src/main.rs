@@ -37,7 +37,9 @@ fn model(app: &App) -> Model {
     let window = app.window(_window).unwrap();
     let egui = Egui::from_window(&window);
     let mut world = World::new(Vec2::new(0.0, -10.0), 10);
-    world.world_context.warm_starting = false;
+    //world.world_context.warm_starting = false;
+    //world.world_context.accumulate_impulse = false;
+    //world.world_context.position_correction = false;
     Model {
         _window,
         world,
@@ -46,7 +48,7 @@ fn model(app: &App) -> Model {
         time_step: 1.0 / 60.0,
         egui,
         settings: EguiSettings {
-            scale: 5.0,
+            scale: 18.0,
             color: WHITE,
         },
         is_first_frame: true,
@@ -253,6 +255,15 @@ fn key_pressed(_app: &App, model: &mut Model, key: Key) {
         Key::Left => {
             model.world.step(-model.time_step);
         }
+        Key::Return => {
+            println!(
+                "{:?}",
+                model.world.bodies.get(0).unwrap() < model.world.bodies.get(1).unwrap()
+            );
+            println!("Number of bodies {:?}", model.world.bodies.len());
+            println!("World Bodies: {:?}", model.world.bodies);
+            //println!("{:?}", model.world.arbiters);
+        }
         _other_key => {}
     }
 }
@@ -278,6 +289,14 @@ fn view(app: &App, _model: &Model, frame: Frame) {
                         .x_y(contact.position.x, contact.position.y)
                         .radius(0.1)
                         .color(settings.color);
+                    draw.arrow()
+                        .start(pt2(contact.position.x, contact.position.y))
+                        .end(pt2(
+                            contact.position.x + contact.normal.x,
+                            contact.position.y + contact.normal.y,
+                        ))
+                        .weight(0.05)
+                        .color(LIGHTSALMON);
                 }
                 None => (),
             }

@@ -60,7 +60,7 @@ pub struct ContactInfo {
     pub feature: FeaturePair,
 }
 
-#[derive(Eq, Hash, PartialEq)]
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub struct ArbiterKey {
     body1: Body,
     body2: Body,
@@ -82,6 +82,7 @@ impl ArbiterKey {
     }
 }
 
+#[derive(Debug)]
 pub struct Arbiter {
     body1: Body,
     body2: Body,
@@ -93,13 +94,12 @@ pub struct Arbiter {
 impl Arbiter {
     pub fn new(body_1: Body, body_2: Body) -> Self {
         let mut contacts = Vec::<Contact>::with_capacity(2);
-        let num_contacts = collide(&mut contacts, &body_1, &body_2);
-
-        let (body1, body2) = if body_1 > body_2 {
+        let (body1, body2) = if body_1 < body_2 {
             (body_1, body_2)
         } else {
             (body_2, body_1)
         };
+        let num_contacts = collide(&mut contacts, &body1, &body2);
 
         Self {
             body1,
@@ -152,7 +152,7 @@ impl Arbiter {
         self.num_contacts = num_new_contacts;
     }
     pub fn pre_step(&mut self, inv_dt: f32, world_context: &WorldContext) {
-        let k_allowed_penetration = 0.0;
+        let k_allowed_penetration = 0.01;
         let k_bias_factor = if world_context.position_correction {
             0.2
         } else {
@@ -188,8 +188,8 @@ impl Arbiter {
                         self.body1.velocity = self.body1.velocity - p * self.body1.inv_mass;
                         self.body1.angular_velocity -= self.body1.inv_moi * r1.cross(p);
 
-                        self.body2.velocity = self.body2.velocity - p * self.body2.inv_mass;
-                        self.body2.angular_velocity -= self.body2.inv_moi * r2.cross(p);
+                        self.body2.velocity = self.body2.velocity + p * self.body2.inv_mass;
+                        self.body2.angular_velocity += self.body2.inv_moi * r2.cross(p);
                     };
                 }
                 None => (),
@@ -257,7 +257,7 @@ impl Arbiter {
                     self.body1.velocity = self.body1.velocity - pt * self.body1.inv_mass;
                     self.body1.angular_velocity -= self.body1.inv_moi * contact.r1.cross(pt);
                     self.body2.velocity = self.body2.velocity + pt * self.body2.inv_mass;
-                    self.body2.angular_velocity -= self.body2.inv_moi * contact.r2.cross(pt);
+                    self.body2.angular_velocity += self.body2.inv_moi * contact.r2.cross(pt);
                 }
                 None => (),
             }

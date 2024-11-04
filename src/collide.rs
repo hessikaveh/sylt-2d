@@ -114,22 +114,24 @@ fn compute_incident_edge(h: &Vec2, pos: &Vec2, rot: &Mat2x2, normal: &Vec2) -> [
             c2.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
             c2.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
         }
-    } else if n.y.signum() > 0.0 {
-        c1.v = Vec2::new(h.x, h.y);
-        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
-        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
-
-        c2.v = Vec2::new(-h.x, h.y);
-        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
-        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
     } else {
-        c1.v = Vec2::new(-h.x, -h.y);
-        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
-        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
+        if n.y.signum() > 0.0 {
+            c1.v = Vec2::new(h.x, h.y);
+            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
+            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
 
-        c2.v = Vec2::new(h.x, -h.y);
-        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
-        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
+            c2.v = Vec2::new(-h.x, h.y);
+            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
+            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
+        } else {
+            c1.v = Vec2::new(-h.x, -h.y);
+            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
+            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
+
+            c2.v = Vec2::new(h.x, -h.y);
+            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
+            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
+        }
     }
 
     c1.v = *pos + (*rot * c1.v);
@@ -192,7 +194,7 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
 
     if face_b.y > RELATIVE_TOL * separation + ABSOLUTE_TOL * h_b.y {
         axis = Axis::FaceBY;
-        // separation = face_b.y;
+        separation = face_b.y;
         normal = if d_b.y > 0.0 { rot_b.col2 } else { -rot_b.col2 };
     }
 
@@ -203,14 +205,13 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
     let neg_edge;
     let pos_edge;
     let front;
-    let side;
 
     let incident_edge = match axis {
         Axis::FaceAX => {
             front_normal = normal;
-            front = front_normal.dot(pos_a) + h_a.x;
+            front = pos_a.dot(front_normal) + h_a.x;
             side_normal = rot_a.col2;
-            side = pos_a.dot(side_normal);
+            let side = pos_a.dot(side_normal);
             neg_side = -side + h_a.y;
             pos_side = side + h_a.y;
             neg_edge = EdgeNumbers::Edge3;
@@ -219,9 +220,9 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
         }
         Axis::FaceAY => {
             front_normal = normal;
-            front = front_normal.dot(pos_a) + h_a.y;
+            front = pos_a.dot(front_normal) + h_a.y;
             side_normal = rot_a.col1;
-            side = pos_a.dot(side_normal);
+            let side = pos_a.dot(side_normal);
             neg_side = -side + h_a.x;
             pos_side = side + h_a.x;
             neg_edge = EdgeNumbers::Edge2;
@@ -230,9 +231,9 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
         }
         Axis::FaceBX => {
             front_normal = -normal;
-            front = front_normal.dot(pos_b) + h_b.x;
+            front = pos_b.dot(front_normal) + h_b.x;
             side_normal = rot_b.col2;
-            side = pos_b.dot(side_normal);
+            let side = pos_b.dot(side_normal);
             neg_side = -side + h_b.y;
             pos_side = side + h_b.y;
             neg_edge = EdgeNumbers::Edge3;
@@ -241,9 +242,9 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
         }
         Axis::FaceBY => {
             front_normal = -normal;
-            front = front_normal.dot(pos_b) + h_b.y;
+            front = pos_b.dot(front_normal) + h_b.y;
             side_normal = rot_b.col1;
-            side = pos_b.dot(side_normal);
+            let side = pos_b.dot(side_normal);
             neg_side = -side + h_b.x;
             pos_side = side + h_b.x;
             neg_edge = EdgeNumbers::Edge2;
