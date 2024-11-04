@@ -285,10 +285,15 @@ fn view(app: &App, _model: &Model, frame: Frame) {
 
     for (_, arbiter) in _model.world.arbiters.iter() {
         for contact in arbiter.contacts.iter() {
-            draw.ellipse()
-                .x_y(contact.position.x, contact.position.y)
-                .radius(0.1)
-                .color(settings.color);
+            match contact {
+                Some(contact) => {
+                    draw.ellipse()
+                        .x_y(contact.position.x, contact.position.y)
+                        .radius(0.1)
+                        .color(settings.color);
+                }
+                None => (),
+            }
         }
     }
     frame.clear(SLATEGREY);

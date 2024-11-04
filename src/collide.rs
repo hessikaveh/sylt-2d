@@ -1,4 +1,4 @@
-use crate::arbiter::{Contact, EdgeNumbers, Edges, FeaturePair};
+use crate::arbiter::{Contact, ContactInfo, EdgeNumbers, Edges, FeaturePair};
 use crate::body::Body;
 use crate::math_utils::{Mat2x2, Vec2};
 
@@ -284,14 +284,14 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
             if axis == Axis::FaceBX || axis == Axis::FaceBY {
                 flip(&mut clip_point.fp);
             }
-            let contact = Contact {
+            let contact = ContactInfo {
                 separation,
                 normal,
                 position: clip_point.v - front_normal * separation,
                 feature: clip_point.fp,
-                ..Contact::default()
+                ..ContactInfo::default()
             };
-            contacts.push(contact);
+            contacts.push(Some(contact));
             num_contacts += 1;
         }
     }

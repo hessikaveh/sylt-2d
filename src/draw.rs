@@ -392,7 +392,12 @@ pub fn draw_rectangle(
 pub fn draw_collision_result(grid: &mut Vec<Vec<StyledSymbol>>, contacts: &Vec<Contact>) {
     // Draw collision contacts
     for contact in contacts {
-        add_point(grid, contact.position, 'C', COLLISION_STYLE);
+        match contact {
+            Some(contact) => {
+                add_point(grid, contact.position, 'C', COLLISION_STYLE);
+            }
+            None => (),
+        }
     }
 }
 
