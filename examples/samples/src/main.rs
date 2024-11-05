@@ -3,11 +3,12 @@ use nannou_egui::{self, egui, Egui};
 use sylt_2d::arbiter::{Contact, ContactInfo};
 use sylt_2d::body::Body;
 use sylt_2d::joint::Joint;
-use sylt_2d::math_utils::Vec2;
+use sylt_2d::math_utils::{Mat2x2, Vec2};
 use sylt_2d::world::World;
 fn main() {
     nannou::app(model).update(update).run();
 }
+const ITERATIONS: u32 = 1000;
 
 struct EguiSettings {
     scale: f32,
@@ -36,7 +37,7 @@ fn model(app: &App) -> Model {
         .unwrap();
     let window = app.window(_window).unwrap();
     let egui = Egui::from_window(&window);
-    let mut world = World::new(Vec2::new(0.0, -10.0), 10);
+    let mut world = World::new(Vec2::new(0.0, -10.0), ITERATIONS);
     //world.world_context.warm_starting = false;
     //world.world_context.accumulate_impulse = false;
     //world.world_context.position_correction = false;
@@ -67,6 +68,7 @@ fn demo1(_model: &mut Model) {
 }
 
 fn demo2(model: &mut Model) {
+    // Simple Pendulum
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.friction = 0.2;
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
@@ -298,6 +300,23 @@ fn view(app: &App, _model: &Model, frame: Frame) {
                 None => (),
             }
         }
+    }
+
+    for joint in _model.world.joints.iter() {
+        let x1 = joint.body_1.position;
+        let x2 = joint.body_2.position;
+        let r1 = Mat2x2::new_from_angle(joint.body_1.rotation);
+        let r2 = Mat2x2::new_from_angle(joint.body_2.rotation);
+        let p1 = x1 + r1 * joint.local_anchor_1;
+        let p2 = x2 + r2 * joint.local_anchor_2;
+        draw.line()
+            .start(pt2(x1.x, x1.y))
+            .end(pt2(p1.x, p1.y))
+            .weight(0.05);
+        draw.line()
+            .start(pt2(x2.x, x2.y))
+            .end(pt2(p2.x, p2.y))
+            .weight(0.05);
     }
     draw.to_frame(app, &frame).unwrap();
     _model.egui.draw_to_frame(&frame).unwrap();

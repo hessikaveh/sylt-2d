@@ -15,7 +15,7 @@ pub struct WorldContext {
 }
 pub struct World {
     gravity: Vec2,
-    iterations: i32,
+    iterations: u32,
     pub world_context: WorldContext,
     pub bodies: Vec<Rc<RefCell<Body>>>,
     pub joints: Vec<Joint>,
@@ -33,7 +33,7 @@ impl<'a> Iterator for BodiesIter<'a> {
 }
 
 impl World {
-    pub fn new(gravity: Vec2, iterations: i32) -> Self {
+    pub fn new(gravity: Vec2, iterations: u32) -> Self {
         let context = WorldContext {
             accumulate_impulse: true,
             warm_starting: true,

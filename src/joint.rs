@@ -13,10 +13,10 @@ pub struct Joint {
     m: Mat2x2,
     pub bias_factor: f32,
     pub softness: f32,
-    local_anchor_1: Vec2,
-    local_anchor_2: Vec2,
-    body_1: Body,
-    body_2: Body,
+    pub local_anchor_1: Vec2,
+    pub local_anchor_2: Vec2,
+    pub body_1: Body,
+    pub body_2: Body,
 }
 
 impl Joint {
