@@ -1,6 +1,9 @@
 use crate::math_utils::Cross;
 use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
+use std::cell::RefCell;
+use std::mem::swap;
+use std::rc::Rc;
 
 #[derive(Debug, Clone, Copy)]
 pub enum EdgeNumbers {
@@ -84,27 +87,27 @@ impl ArbiterKey {
 
 #[derive(Debug)]
 pub struct Arbiter {
-    body1: Body,
-    body2: Body,
+    body1: Rc<RefCell<Body>>,
+    body2: Rc<RefCell<Body>>,
     friction: f32,
     pub num_contacts: i32,
     pub contacts: Vec<Contact>,
 }
 
 impl Arbiter {
-    pub fn new(body_1: Body, body_2: Body) -> Self {
+    pub fn new(body_1: Rc<RefCell<Body>>, body_2: Rc<RefCell<Body>>) -> Self {
         let mut contacts = Vec::<Contact>::with_capacity(2);
-        let (body1, body2) = if body_1.id < body_2.id {
-            (body_1, body_2)
-        } else {
-            (body_2, body_1)
-        };
-        let num_contacts = collide(&mut contacts, &body1, &body2);
 
+        if body_1.borrow().id > body_2.borrow().id {
+            body_1.swap(&body_2);
+        };
+
+        let num_contacts = collide(&mut contacts, &body_1.borrow(), &body_2.borrow());
+        let friction = f32::sqrt(body_1.borrow().friction * body_2.borrow().friction);
         Self {
-            body1,
-            body2,
-            friction: f32::sqrt(body1.friction * body2.friction),
+            body1: body_1,
+            body2: body_2,
+            friction,
             num_contacts,
             contacts,
         }
@@ -117,7 +120,7 @@ impl Arbiter {
     ) {
         let mut merged_contacts = Vec::<Contact>::with_capacity(2);
 
-        for new_contact in new_contacts.into_iter() {
+        for new_contact in new_contacts.iter() {
             let mut k = -1;
             let new_contact_feature = new_contact.map(|contact| contact.feature.value);
             if new_contact_feature.is_some() {
@@ -158,26 +161,28 @@ impl Arbiter {
         } else {
             0.0
         };
+        let mut body1 = self.body1.borrow_mut();
+        let mut body2 = self.body2.borrow_mut();
         for contact in self.contacts.iter_mut() {
             match contact {
                 Some(contact) => {
-                    let r1 = contact.position - self.body1.position;
-                    let r2 = contact.position - self.body2.position;
+                    let r1 = contact.position - body1.position;
+                    let r2 = contact.position - body2.position;
 
                     // pre-compute normal mass , tangent mass, and bias
                     let rn1 = r1.dot(contact.normal);
                     let rn2 = r2.dot(contact.normal);
-                    let mut k_normal = self.body1.inv_mass + self.body2.inv_mass;
-                    k_normal += self.body1.inv_moi * (r1.dot(r1) - rn1 * rn1)
-                        + self.body2.inv_moi * (r2.dot(r2) - rn2 * rn2);
+                    let mut k_normal = body1.inv_mass + body2.inv_mass;
+                    k_normal += body1.inv_moi * (r1.dot(r1) - rn1 * rn1)
+                        + body2.inv_moi * (r2.dot(r2) - rn2 * rn2);
                     contact.mass_normal = 1.0 / k_normal;
 
                     let tangent = (contact.normal).cross(1.0);
                     let rt1 = r1.dot(tangent);
                     let rt2 = r2.dot(tangent);
-                    let mut k_tangent = self.body1.inv_mass + self.body2.inv_mass;
-                    k_tangent += self.body1.inv_moi * (r1.dot(r1) - rt1 * rt1)
-                        + self.body2.inv_moi * (r2.dot(r2) - rt2 * rt2);
+                    let mut k_tangent = body1.inv_mass + body2.inv_mass;
+                    k_tangent += body1.inv_moi * (r1.dot(r1) - rt1 * rt1)
+                        + body2.inv_moi * (r2.dot(r2) - rt2 * rt2);
                     contact.mass_tangent = 1.0 / k_tangent;
 
                     contact.bias = -k_bias_factor
@@ -185,11 +190,11 @@ impl Arbiter {
                         * f32::min(0.0, contact.separation + k_allowed_penetration);
                     if world_context.accumulate_impulse {
                         let p = contact.normal * contact.pn + tangent * contact.pt;
-                        self.body1.velocity = self.body1.velocity - p * self.body1.inv_mass;
-                        self.body1.angular_velocity -= self.body1.inv_moi * r1.cross(p);
+                        body1.velocity = body1.velocity - p * body1.inv_mass;
+                        body1.angular_velocity -= body1.inv_moi * r1.cross(p);
 
-                        self.body2.velocity = self.body2.velocity + p * self.body2.inv_mass;
-                        self.body2.angular_velocity += self.body2.inv_moi * r2.cross(p);
+                        body2.velocity = body2.velocity + p * body2.inv_mass;
+                        body2.angular_velocity += body2.inv_moi * r2.cross(p);
                     };
                 }
                 None => (),
@@ -197,16 +202,19 @@ impl Arbiter {
         }
     }
     pub fn apply_impulse(&mut self, world_context: &WorldContext) {
+        let mut body1 = self.body1.borrow_mut();
+        let mut body2 = self.body2.borrow_mut();
+
         for contact in self.contacts.iter_mut() {
             match contact {
                 Some(contact) => {
-                    contact.r1 = contact.position - self.body1.position;
-                    contact.r2 = contact.position - self.body2.position;
+                    contact.r1 = contact.position - body1.position;
+                    contact.r2 = contact.position - body2.position;
 
                     // Relative velocity at contact
-                    let dv = self.body2.velocity + self.body2.angular_velocity.cross(contact.r2)
-                        - self.body1.velocity
-                        - self.body1.angular_velocity.cross(contact.r1);
+                    let dv = body2.velocity + body2.angular_velocity.cross(contact.r2)
+                        - body1.velocity
+                        - body1.angular_velocity.cross(contact.r1);
 
                     // Compute normal impulse
                     let vn = dv.dot(contact.normal);
@@ -224,16 +232,16 @@ impl Arbiter {
                     // Apply contact impulse
                     let pn = contact.normal * d_pn;
 
-                    self.body1.velocity = self.body1.velocity - pn * self.body1.inv_mass;
-                    self.body1.angular_velocity -= self.body1.inv_moi * contact.r1.cross(pn);
+                    body1.velocity = body1.velocity - pn * body1.inv_mass;
+                    body1.angular_velocity -= body1.inv_moi * contact.r1.cross(pn);
 
-                    self.body2.velocity = self.body2.velocity + pn * self.body2.inv_mass;
-                    self.body2.angular_velocity += self.body2.inv_moi * contact.r2.cross(pn);
+                    body2.velocity = body2.velocity + pn * body2.inv_mass;
+                    body2.angular_velocity += body2.inv_moi * contact.r2.cross(pn);
 
                     // Relative velocity at contact
-                    let dv = self.body2.velocity + self.body2.angular_velocity.cross(contact.r2)
-                        - self.body1.velocity
-                        - self.body1.angular_velocity.cross(contact.r1);
+                    let dv = body2.velocity + body2.angular_velocity.cross(contact.r2)
+                        - body1.velocity
+                        - body1.angular_velocity.cross(contact.r1);
 
                     let tangent = contact.normal.cross(1.0);
                     let vt = dv.dot(tangent);
@@ -254,10 +262,10 @@ impl Arbiter {
                     // Apply contact impulse
                     let pt = tangent * d_pt;
 
-                    self.body1.velocity = self.body1.velocity - pt * self.body1.inv_mass;
-                    self.body1.angular_velocity -= self.body1.inv_moi * contact.r1.cross(pt);
-                    self.body2.velocity = self.body2.velocity + pt * self.body2.inv_mass;
-                    self.body2.angular_velocity += self.body2.inv_moi * contact.r2.cross(pt);
+                    body1.velocity = body1.velocity - pt * body1.inv_mass;
+                    body1.angular_velocity -= body1.inv_moi * contact.r1.cross(pt);
+                    body2.velocity = body2.velocity + pt * body2.inv_mass;
+                    body2.angular_velocity += body2.inv_moi * contact.r2.cross(pt);
                 }
                 None => (),
             }

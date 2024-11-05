@@ -1,9 +1,11 @@
-use std::collections::HashMap;
-
 use crate::arbiter::{Arbiter, ArbiterKey};
 use crate::body::Body;
 use crate::joint::Joint;
 use crate::math_utils::Vec2;
+use std::cell::{Ref, RefCell};
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::slice::Iter;
 
 #[derive(Clone, Copy)]
 pub struct WorldContext {
@@ -15,9 +17,19 @@ pub struct World {
     gravity: Vec2,
     iterations: i32,
     pub world_context: WorldContext,
-    pub bodies: Vec<Body>,
+    pub bodies: Vec<Rc<RefCell<Body>>>,
     pub joints: Vec<Joint>,
     pub arbiters: HashMap<ArbiterKey, Arbiter>,
+}
+
+pub struct BodiesIter<'a> {
+    inner: Iter<'a, Rc<RefCell<Body>>>,
+}
+impl<'a> Iterator for BodiesIter<'a> {
+    type Item = Ref<'a, Body>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|body| body.borrow())
+    }
 }
 
 impl World {
@@ -31,14 +43,20 @@ impl World {
             gravity,
             iterations,
             world_context: context,
-            bodies: vec![],
-            joints: vec![],
+            bodies: Vec::<Rc<RefCell<Body>>>::with_capacity(2),
+            joints: Vec::<Joint>::with_capacity(2),
             arbiters: HashMap::<ArbiterKey, Arbiter>::new(),
         }
     }
 
     pub fn add_body(&mut self, body: Body) {
-        self.bodies.push(body);
+        self.bodies.push(Rc::new(RefCell::new(body)));
+    }
+
+    pub fn iter_bodies(&self) -> BodiesIter {
+        BodiesIter {
+            inner: self.bodies.iter(),
+        }
     }
 
     pub fn add_joint(&mut self, joint: Joint) {
@@ -53,14 +71,14 @@ impl World {
 
     pub fn broad_phase(&mut self) {
         for i in 0..self.bodies.len() {
-            let body_i = self.bodies[i];
+            let body_i = self.bodies[i].borrow();
 
             for j in (i + 1)..self.bodies.len() {
-                let body_j = self.bodies[j];
+                let body_j = self.bodies[j].borrow();
                 if body_i.inv_mass == 0.0 && body_j.inv_mass == 0.0 {
                     continue;
                 };
-                let new_arbiter = Arbiter::new(self.bodies[i], self.bodies[j]);
+                let new_arbiter = Arbiter::new(self.bodies[i].clone(), self.bodies[j].clone());
                 let key = ArbiterKey::new(&body_i, &body_j);
 
                 if new_arbiter.num_contacts > 0 {
@@ -88,7 +106,8 @@ impl World {
         self.broad_phase();
 
         // Integrate forces.
-        for body in self.bodies.iter_mut() {
+        for body in self.bodies.iter() {
+            let mut body = body.borrow_mut();
             if body.inv_mass == 0.0 {
                 continue;
             };
@@ -117,7 +136,8 @@ impl World {
         }
 
         // Integrate Velocities
-        for body in self.bodies.iter_mut() {
+        for body in self.bodies.iter() {
+            let mut body = body.borrow_mut();
             body.position = body.position + body.velocity * dt;
             body.rotation += body.angular_velocity * dt;
 

@@ -1,8 +1,5 @@
 use crate::math_utils::Vec2;
-use std::{
-    hash::{Hash, Hasher},
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct Body {

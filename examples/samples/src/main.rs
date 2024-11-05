@@ -189,6 +189,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         load_demo(_model);
         _model.is_first_frame = false;
     }
+    _model.world.step(_model.time_step);
     if _model.load_demo_flag {
         load_demo(_model);
         _model.load_demo_flag = false;
@@ -256,10 +257,6 @@ fn key_pressed(_app: &App, model: &mut Model, key: Key) {
             model.world.step(-model.time_step);
         }
         Key::Return => {
-            println!(
-                "{:?}",
-                model.world.bodies.get(0).unwrap().id < model.world.bodies.get(1).unwrap().id
-            );
             println!("Number of bodies {:?}", model.world.bodies.len());
             println!("World Bodies: {:?}", model.world.bodies);
             println!("{:?}", model.world.arbiters);
@@ -273,7 +270,7 @@ fn view(app: &App, _model: &Model, frame: Frame) {
     let draw = draw.scale(_model.settings.scale);
     let settings = &_model.settings;
     draw.background().color(SLATEGREY);
-    for (num, body) in _model.world.bodies.iter().enumerate() {
+    for (num, body) in _model.world.iter_bodies().enumerate() {
         draw.rect()
             .x_y(body.position.x, body.position.y)
             .w_h(body.width.x, body.width.y)

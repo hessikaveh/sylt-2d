@@ -315,6 +315,7 @@ mod tests {
         let pos_a = Vec2::new(10.0, 1.0);
         let pos_b = Vec2::new(15.0, 5.0);
         let box_a = Body {
+            id: 0,
             position: pos_a,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -329,6 +330,7 @@ mod tests {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 1,
             position: pos_b,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -408,6 +410,7 @@ mod tests {
         let pos_a = Vec2::new(11.0, 3.0);
         let pos_b = Vec2::new(12., 2.);
         let box_a = Body {
+            id: 1,
             position: pos_a,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -422,6 +425,7 @@ mod tests {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 2,
             position: pos_b,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -503,6 +507,7 @@ mod tests {
         let pos_a = Vec2::new(12.0, 0.0);
         let pos_b = Vec2::new(15.5, 1.0);
         let box_a = Body {
+            id: 1,
             position: pos_a,
             rotation: 45.0_f32.to_radians(),
             velocity: Vec2::new(0.0, 0.0),
@@ -517,6 +522,7 @@ mod tests {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 2,
             position: pos_b,
             rotation: -45.0_f32.to_radians(),
             velocity: Vec2::new(0.0, 0.0),
@@ -597,6 +603,7 @@ mod tests {
         let pos_a = Vec2::new(14.0, 2.0);
         let pos_b = Vec2::new(18.0, 2.0);
         let box_a = Body {
+            id: 1,
             position: pos_a,
             rotation: 45.0_f32.to_radians(),
             velocity: Vec2::new(0.0, 0.0),
@@ -611,6 +618,7 @@ mod tests {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 2,
             position: pos_b,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -696,6 +704,7 @@ mod tests {
         let pos_a = Vec2::new(1.0, 1.0);
         let pos_b = Vec2::new(5., 1.0);
         let box_a = Body {
+            id: 1,
             position: pos_a,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),
@@ -710,6 +719,7 @@ mod tests {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 2,
             position: pos_b,
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),

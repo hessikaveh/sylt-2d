@@ -29,6 +29,7 @@ fn main() {
         let rect_b_rotation = 0.0; // No rotation for Rectangle B
                                    // Define boxes
         let box_a = Body {
+            id: 1,
             position: rect_a_position,
             rotation: rect_a_rotation,
             velocity: Vec2::new(0.0, 0.0),
@@ -43,6 +44,7 @@ fn main() {
             inv_moi: 1.0,
         };
         let box_b = Body {
+            id: 2,
             position: rect_b_position,
             rotation: rect_b_rotation,
             velocity: Vec2::new(0.0, 0.0),
