@@ -1,8 +1,12 @@
 use crate::math_utils::Vec2;
-use std::hash::{Hash, Hasher};
+use std::{
+    hash::{Hash, Hasher},
+    sync::atomic::{AtomicUsize, Ordering},
+};
 
-#[derive(Debug, Default, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct Body {
+    pub id: usize,
     pub position: Vec2,
     pub rotation: f32,
     pub velocity: Vec2,
@@ -17,6 +21,8 @@ pub struct Body {
     pub inv_moi: f32,
 }
 
+static BODY_ID_COUNTER: AtomicUsize = AtomicUsize::new(1);
+/*
 impl Hash for Body {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.position.hash(state); // Hash the Vec2 by converting it to an array
@@ -33,9 +39,9 @@ impl Hash for Body {
         self.inv_moi.to_bits().hash(state);
     }
 }
-
 impl Eq for Body {}
 
+*/
 impl Body {
     pub fn new(width: Vec2, mass: f32) -> Self {
         let inv_mass;
@@ -51,7 +57,10 @@ impl Body {
             inv_moi = 0.0;
         }
 
+        let id = BODY_ID_COUNTER.fetch_add(1, Ordering::Relaxed);
+
         Self {
+            id,
             position: Vec2::new(0.0, 0.0),
             rotation: 0.0,
             velocity: Vec2::new(0.0, 0.0),

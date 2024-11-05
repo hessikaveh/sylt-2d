@@ -61,7 +61,7 @@ impl World {
                     continue;
                 };
                 let new_arbiter = Arbiter::new(self.bodies[i], self.bodies[j]);
-                let key = ArbiterKey::new(body_i, body_j);
+                let key = ArbiterKey::new(&body_i, &body_j);
 
                 if new_arbiter.num_contacts > 0 {
                     let _ = self

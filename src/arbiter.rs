@@ -62,21 +62,21 @@ pub struct ContactInfo {
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct ArbiterKey {
-    body1: Body,
-    body2: Body,
+    body1_id: usize,
+    body2_id: usize,
 }
 
 impl ArbiterKey {
-    pub fn new(body_1: Body, body_2: Body) -> Self {
-        if body_1 < body_2 {
+    pub fn new(body_1: &Body, body_2: &Body) -> Self {
+        if body_1.id < body_2.id {
             Self {
-                body1: body_1,
-                body2: body_2,
+                body1_id: body_1.id,
+                body2_id: body_2.id,
             }
         } else {
             Self {
-                body1: body_2,
-                body2: body_1,
+                body1_id: body_2.id,
+                body2_id: body_1.id,
             }
         }
     }
@@ -94,7 +94,7 @@ pub struct Arbiter {
 impl Arbiter {
     pub fn new(body_1: Body, body_2: Body) -> Self {
         let mut contacts = Vec::<Contact>::with_capacity(2);
-        let (body1, body2) = if body_1 < body_2 {
+        let (body1, body2) = if body_1.id < body_2.id {
             (body_1, body_2)
         } else {
             (body_2, body_1)
@@ -168,7 +168,7 @@ impl Arbiter {
                     let rn1 = r1.dot(contact.normal);
                     let rn2 = r2.dot(contact.normal);
                     let mut k_normal = self.body1.inv_mass + self.body2.inv_mass;
-                    k_normal += self.body1.inv_moi * (r1.dot(r2) - rn1 * rn2)
+                    k_normal += self.body1.inv_moi * (r1.dot(r1) - rn1 * rn1)
                         + self.body2.inv_moi * (r2.dot(r2) - rn2 * rn2);
                     contact.mass_normal = 1.0 / k_normal;
 

@@ -258,11 +258,11 @@ fn key_pressed(_app: &App, model: &mut Model, key: Key) {
         Key::Return => {
             println!(
                 "{:?}",
-                model.world.bodies.get(0).unwrap() < model.world.bodies.get(1).unwrap()
+                model.world.bodies.get(0).unwrap().id < model.world.bodies.get(1).unwrap().id
             );
             println!("Number of bodies {:?}", model.world.bodies.len());
             println!("World Bodies: {:?}", model.world.bodies);
-            //println!("{:?}", model.world.arbiters);
+            println!("{:?}", model.world.arbiters);
         }
         _other_key => {}
     }
