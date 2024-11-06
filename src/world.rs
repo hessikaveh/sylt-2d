@@ -36,7 +36,7 @@ impl World {
     pub fn new(gravity: Vec2, iterations: u32) -> Self {
         let context = WorldContext {
             accumulate_impulse: true,
-            warm_starting: true,
+            warm_starting: false,
             position_correction: true,
         };
         Self {

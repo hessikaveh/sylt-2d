@@ -8,7 +8,7 @@ use sylt_2d::world::World;
 fn main() {
     nannou::app(model).update(update).run();
 }
-const ITERATIONS: u32 = 1000;
+const ITERATIONS: u32 = 100;
 
 struct EguiSettings {
     scale: f32,
@@ -81,7 +81,7 @@ fn demo2(model: &mut Model) {
     body2.rotation = 0.0;
     model.world.add_body(body2);
 
-    let joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0));
+    let joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0), &model.world);
     model.world.add_joint(joint);
 }
 
@@ -151,7 +151,7 @@ fn demo6(model: &mut Model) {
     body2.position = Vec2::new(0.0, 1.0);
     model.world.add_body(body2);
 
-    let mut joint = Joint::new(body1, body2, Vec2::new(0.0, 1.0));
+    let joint = Joint::new(body1, body2, Vec2::new(0.0, 1.0), &model.world);
     model.world.add_joint(joint);
 }
 
@@ -178,7 +178,12 @@ fn demo7(model: &mut Model) {
         plank.position = Vec2::new(-8.5 + 1.25 * i as f32, 5.0);
         model.world.add_body(plank);
 
-        let mut joint = Joint::new(plank, ground, Vec2::new(-9.125 + 1.25 * i as f32, 5.0));
+        let mut joint = Joint::new(
+            plank,
+            ground,
+            Vec2::new(-9.125 + 1.25 * i as f32, 5.0),
+            &model.world,
+        );
         joint.softness = softness;
         joint.bias_factor = bias_factor;
         model.world.add_joint(joint);
@@ -228,6 +233,20 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         if clicked {
             settings.color = rgb(random(), random(), random());
         }
+
+        // Checkbox to enable a feature
+        ui.checkbox(
+            &mut _model.world.world_context.warm_starting,
+            "Enable/Disable warm starting.",
+        );
+        ui.checkbox(
+            &mut _model.world.world_context.position_correction,
+            "Enable/Disable position correction.",
+        );
+        ui.checkbox(
+            &mut _model.world.world_context.accumulate_impulse,
+            "Enable/Disable accumulation of impulse.",
+        );
     });
 }
 
@@ -303,10 +322,10 @@ fn view(app: &App, _model: &Model, frame: Frame) {
     }
 
     for joint in _model.world.joints.iter() {
-        let x1 = joint.body_1.position;
-        let x2 = joint.body_2.position;
-        let r1 = Mat2x2::new_from_angle(joint.body_1.rotation);
-        let r2 = Mat2x2::new_from_angle(joint.body_2.rotation);
+        let x1 = joint.body_1.borrow().position;
+        let x2 = joint.body_2.borrow().position;
+        let r1 = Mat2x2::new_from_angle(joint.body_1.borrow().rotation);
+        let r2 = Mat2x2::new_from_angle(joint.body_2.borrow().rotation);
         let p1 = x1 + r1 * joint.local_anchor_1;
         let p2 = x2 + r2 * joint.local_anchor_2;
         draw.line()

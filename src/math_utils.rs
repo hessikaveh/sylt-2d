@@ -129,8 +129,8 @@ impl Mat2x2 {
         let s = f32::sin(angle);
 
         Self {
-            col1: Vec2::new(c, -s),
-            col2: Vec2::new(s, c),
+            col1: Vec2::new(c, s),
+            col2: Vec2::new(-s, c),
         }
     }
 
