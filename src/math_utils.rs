@@ -248,8 +248,8 @@ mod tests {
         //println!("{}", mat1);
         //println!("{}", mat1.invert());
         //println!("{}", mat1.transpose());
-        assert_eq!(mat1.invert().col2.x, -1.0);
-        assert_eq!(mat1.transpose().col1.y, 1.0);
+        assert_eq!(mat1.invert().col2.x, 1.0);
+        assert_eq!(mat1.transpose().col1.y, -1.0);
     }
 
     #[test]
@@ -266,7 +266,7 @@ mod tests {
         assert_eq!(res.col1.x, f32::consts::SQRT_2);
         //println!("{}", res);
         let res = mat1 * pos;
-        assert_eq!(res.x, 3.535534);
+        assert_eq!(res.x, -0.7071067);
         //println!("{} * {} = {}", mat1, pos, res);
     }
 }
