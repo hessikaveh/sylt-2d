@@ -58,6 +58,7 @@ fn model(app: &App) -> Model {
 }
 
 fn demo1(_model: &mut Model) {
+    // Single box
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     _model.world.add_body(body1);
@@ -107,6 +108,7 @@ fn demo3(model: &mut Model) {
 }
 
 fn demo4(model: &mut Model) {
+    // Vertical Stack
     let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
@@ -121,6 +123,7 @@ fn demo4(model: &mut Model) {
 }
 
 fn demo5(model: &mut Model) {
+    // Pyramid
     let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
@@ -143,15 +146,28 @@ fn demo5(model: &mut Model) {
 }
 
 fn demo6(model: &mut Model) {
+    // A Teeter
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     model.world.add_body(body1);
 
-    let mut body2 = Body::new(Vec2::new(12.0, 0.25), 100.0);
-    body2.position = Vec2::new(0.0, 1.0);
+    let mut body2 = Body::new(Vec2::new(12.0, 0.25), 10.0);
+    body2.position = Vec2::new(0.0, 3.0);
     model.world.add_body(body2);
 
-    let joint = Joint::new(body1, body2, Vec2::new(0.0, 1.0), &model.world);
+    let mut body3 = Body::new(Vec2::new(0.5, 0.5), 2.0);
+    body3.position = Vec2::new(-5.0, 5.0);
+    model.world.add_body(body3);
+
+    let mut body4 = Body::new(Vec2::new(0.5, 0.5), 2.0);
+    body4.position = Vec2::new(-5.5, 5.0);
+    model.world.add_body(body4);
+
+    let mut body5 = Body::new(Vec2::new(1.0, 1.0), 55.0);
+    body5.position = Vec2::new(5.5, 15.0);
+    model.world.add_body(body5);
+
+    let joint = Joint::new(body1, body2, Vec2::new(0.0, 3.0), &model.world);
     model.world.add_joint(joint);
 }
 
@@ -162,7 +178,7 @@ fn demo7(model: &mut Model) {
     model.world.add_body(ground);
 
     let num_planks = 15;
-    let mass = 50.0;
+    let mass = 10.0;
     let frequency_hz = 2.0;
     let damping_ratio = 0.7;
     let omega = 2.0 * std::f32::consts::PI * frequency_hz;
@@ -172,7 +188,7 @@ fn demo7(model: &mut Model) {
     let softness = 1.0 / (d + time_step * k);
     let bias_factor = time_step * k / (d + time_step * k);
 
-    for i in 0..num_planks {
+    for i in 0..=num_planks {
         let mut plank = Body::new(Vec2::new(1.0, 0.25), mass);
         plank.friction = 0.2;
         plank.position = Vec2::new(-8.5 + 1.25 * i as f32, 5.0);
@@ -189,6 +205,96 @@ fn demo7(model: &mut Model) {
         model.world.add_joint(joint);
     }
 }
+
+// Dominos demo
+fn demo8(model: &mut Model) {
+    let mut b1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    b1.position = Vec2::new(0.0, -0.5 * b1.width.y);
+    model.world.add_body(b1);
+
+    let mut b = Body::new(Vec2::new(12.0, 0.5), f32::MAX);
+    b.position = Vec2::new(-1.5, 10.0);
+    model.world.add_body(b);
+
+    for i in 0..10 {
+        let mut domino = Body::new(Vec2::new(0.2, 2.0), 10.0);
+        domino.position = Vec2::new(-6.0 + 1.0 * i as f32, 11.125);
+        domino.friction = 0.1;
+        model.world.add_body(domino);
+    }
+
+    let mut b2 = Body::new(Vec2::new(14.0, 0.5), f32::MAX);
+    b2.position = Vec2::new(1.0, 6.0);
+    b2.rotation = 0.3;
+    model.world.add_body(b2);
+
+    let mut b3 = Body::new(Vec2::new(0.5, 3.0), f32::MAX);
+    b3.position = Vec2::new(-7.0, 4.0);
+    model.world.add_body(b3);
+
+    let mut b4 = Body::new(Vec2::new(0.5, 0.5), 10.0);
+    b4.position = Vec2::new(-10.0, 15.0);
+    model.world.add_body(b4);
+
+    let mut b5 = Body::new(Vec2::new(2.0, 2.0), 20.0);
+    b5.position = Vec2::new(6.0, 2.5);
+    b5.friction = 0.1;
+    model.world.add_body(b5);
+
+    let mut b6 = Body::new(Vec2::new(2.0, 0.2), 10.0);
+    b6.position = Vec2::new(6.0, 3.6);
+    model.world.add_body(b6);
+    let joint1 = Joint::new(b1, b3, Vec2::new(-2.0, 1.0), &model.world);
+    model.world.add_joint(joint1);
+    let joint2 = Joint::new(b2, b4, Vec2::new(-7.0, 15.0), &model.world);
+    model.world.add_joint(joint2);
+
+    let joint3 = Joint::new(b1, b5, Vec2::new(6.0, 2.6), &model.world);
+    model.world.add_joint(joint3);
+
+    let joint4 = Joint::new(b5, b6, Vec2::new(7.0, 3.5), &model.world);
+    model.world.add_joint(joint4);
+}
+
+// Multi-pendulum demo
+fn demo9(model: &mut Model) {
+    let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
+    ground.friction = 0.2;
+    ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
+    ground.rotation = 0.0;
+    model.world.add_body(ground);
+
+    let mut b1 = ground;
+    let mass = 10.0;
+    let frequency_hz = 4.0;
+    let damping_ratio = 0.7;
+
+    let omega = 2.0 * std::f32::consts::PI * frequency_hz;
+    let d = 2.0 * mass * damping_ratio * omega;
+    let k = mass * omega * omega;
+
+    let time_step = model.time_step;
+    let softness = 1.0 / (d + time_step * k);
+    let bias_factor = time_step * k / (d + time_step * k);
+
+    let y = 12.0;
+
+    for i in 0..15 {
+        let mut pendulum = Body::new(Vec2::new(0.75, 0.25), mass);
+        pendulum.friction = 0.2;
+        pendulum.position = Vec2::new(0.5 + i as f32, y);
+        pendulum.rotation = 0.0;
+        model.world.add_body(pendulum);
+
+        let mut joint = Joint::new(b1, pendulum, Vec2::new(i as f32, y), &model.world);
+        joint.softness = softness;
+        joint.bias_factor = bias_factor;
+        model.world.add_joint(joint);
+
+        b1 = pendulum;
+    }
+}
+
 fn update(_app: &App, _model: &mut Model, _update: Update) {
     if _model.is_first_frame {
         _model.world.step(_model.time_step);
@@ -207,15 +313,25 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
 
     egui.set_elapsed_time(_update.since_start);
     let ctx = egui.begin_frame();
-
+    let demo_names = [
+        "Demo 1: A Single Box",
+        "Demo 2: Simple Pendulum",
+        "Demo 3: Varying Friction Coefficients",
+        "Demo 4: Randomized Stacking",
+        "Demo 5: Pyramid Stacking",
+        "Demo 6: A Teeter",
+        "Demo 7: A Suspension Bridge",
+        "Demo 8: Dominos",
+        "Demo 9: Multi-pendulum",
+    ];
     egui::Window::new("Settings").show(&ctx, |ui| {
         // Dropdown for selecting the demo
         ui.label("Select Demo:");
         egui::ComboBox::from_label("Demo Selection")
             .selected_text(format!("Demo {}", _model.demo_index + 1))
             .show_ui(ui, |ui| {
-                for i in 0..7 {
-                    ui.selectable_value(&mut _model.demo_index, i, format!("Demo {}", i + 1));
+                for (i, name) in demo_names.iter().enumerate() {
+                    ui.selectable_value(&mut _model.demo_index, i as u32, *name);
                 }
             });
 
@@ -261,6 +377,8 @@ fn load_demo(model: &mut Model) {
         4 => demo5(model),
         5 => demo6(model),
         6 => demo7(model),
+        7 => demo8(model),
+        8 => demo9(model),
         _ => {}
     }
 }
