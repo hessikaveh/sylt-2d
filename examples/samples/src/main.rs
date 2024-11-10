@@ -1,6 +1,5 @@
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
-use sylt_2d::arbiter::{Contact, ContactInfo};
 use sylt_2d::body::Body;
 use sylt_2d::joint::Joint;
 use sylt_2d::math_utils::{Mat2x2, Vec2};
@@ -20,7 +19,7 @@ struct Model {
     time_step: f32,
     demo_index: u32,
     world: World,
-    bomb: Option<Body>,
+    bomb: bool,
     egui: Egui,
     settings: EguiSettings,
     is_first_frame: bool,
@@ -37,15 +36,12 @@ fn model(app: &App) -> Model {
         .unwrap();
     let window = app.window(_window).unwrap();
     let egui = Egui::from_window(&window);
-    let mut world = World::new(Vec2::new(0.0, -10.0), ITERATIONS);
-    //world.world_context.warm_starting = false;
-    //world.world_context.accumulate_impulse = false;
-    //world.world_context.position_correction = false;
+    let world = World::new(Vec2::new(0.0, -10.0), ITERATIONS);
     Model {
         _window,
         world,
         demo_index: 0,
-        bomb: None,
+        bomb: false,
         time_step: 1.0 / 60.0,
         egui,
         settings: EguiSettings {
@@ -55,6 +51,16 @@ fn model(app: &App) -> Model {
         is_first_frame: true,
         load_demo_flag: false,
     }
+}
+
+fn launch_bomb(model: &mut Model) {
+    let mut bomb = Body::new(Vec2::new(1.0, 1.0), 50.0);
+    bomb.friction = 0.2;
+    bomb.position = Vec2::new(random_range(-15.0, 15.0), 15.0);
+    bomb.rotation = random_range(-1.5, 1.5);
+    bomb.velocity = bomb.position * -1.5;
+    bomb.angular_velocity = random_range(-20.0, 20.0);
+    model.world.add_body(bomb);
 }
 
 fn demo1(_model: &mut Model) {
@@ -223,34 +229,42 @@ fn demo8(model: &mut Model) {
         model.world.add_body(domino);
     }
 
-    let mut b2 = Body::new(Vec2::new(14.0, 0.5), f32::MAX);
-    b2.position = Vec2::new(1.0, 6.0);
-    b2.rotation = 0.3;
+    let mut bb = Body::new(Vec2::new(14.0, 0.5), f32::MAX);
+    bb.position = Vec2::new(1.0, 6.0);
+    bb.rotation = 0.3;
+    model.world.add_body(bb);
+
+    let mut b2 = Body::new(Vec2::new(0.5, 3.0), f32::MAX);
+    b2.position = Vec2::new(-7.0, 4.0);
     model.world.add_body(b2);
 
-    let mut b3 = Body::new(Vec2::new(0.5, 3.0), f32::MAX);
-    b3.position = Vec2::new(-7.0, 4.0);
+    let mut b3 = Body::new(Vec2::new(12.0, 0.25), 10.0);
+    b3.position = Vec2::new(-0.9, 1.0);
     model.world.add_body(b3);
 
-    let mut b4 = Body::new(Vec2::new(0.5, 0.5), 10.0);
+    let joint1 = Joint::new(b1, b3, Vec2::new(-2.0, 3.0), &model.world);
+    model.world.add_joint(joint1);
+
+    let mut b4 = Body::new(Vec2::new(0.5, 0.5), 16.0);
     b4.position = Vec2::new(-10.0, 15.0);
+    b4.rotation = 0.0;
+    b4.friction = 0.2;
     model.world.add_body(b4);
 
-    let mut b5 = Body::new(Vec2::new(2.0, 2.0), 20.0);
+    let joint2 = Joint::new(b2, b4, Vec2::new(-7.0, 15.0), &model.world);
+    model.world.add_joint(joint2);
+
+    let mut b5 = Body::new(Vec2::new(2.0, 2.0), 10.0);
     b5.position = Vec2::new(6.0, 2.5);
     b5.friction = 0.1;
     model.world.add_body(b5);
 
+    let joint3 = Joint::new(b1, b5, Vec2::new(6.0, 2.6), &model.world);
+    model.world.add_joint(joint3);
+
     let mut b6 = Body::new(Vec2::new(2.0, 0.2), 10.0);
     b6.position = Vec2::new(6.0, 3.6);
     model.world.add_body(b6);
-    let joint1 = Joint::new(b1, b3, Vec2::new(-2.0, 1.0), &model.world);
-    model.world.add_joint(joint1);
-    let joint2 = Joint::new(b2, b4, Vec2::new(-7.0, 15.0), &model.world);
-    model.world.add_joint(joint2);
-
-    let joint3 = Joint::new(b1, b5, Vec2::new(6.0, 2.6), &model.world);
-    model.world.add_joint(joint3);
 
     let joint4 = Joint::new(b5, b6, Vec2::new(7.0, 3.5), &model.world);
     model.world.add_joint(joint4);
@@ -308,6 +322,11 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         _model.load_demo_flag = false;
     }
 
+    if _model.bomb {
+        launch_bomb(_model);
+        _model.bomb = false;
+    }
+
     let egui = &mut _model.egui;
     let settings = &mut _model.settings;
 
@@ -348,6 +367,10 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
 
         if clicked {
             settings.color = rgb(random(), random(), random());
+        }
+
+        if ui.button("launch bomb").clicked() {
+            _model.bomb = true;
         }
 
         // Checkbox to enable a feature
@@ -438,7 +461,6 @@ fn view(app: &App, _model: &Model, frame: Frame) {
             }
         }
     }
-
     for joint in _model.world.joints.iter() {
         let x1 = joint.body_1.borrow().position;
         let x2 = joint.body_2.borrow().position;
@@ -449,11 +471,13 @@ fn view(app: &App, _model: &Model, frame: Frame) {
         draw.line()
             .start(pt2(x1.x, x1.y))
             .end(pt2(p1.x, p1.y))
-            .weight(0.05);
+            .weight(0.05)
+            .color(SLATEBLUE);
         draw.line()
             .start(pt2(x2.x, x2.y))
             .end(pt2(p2.x, p2.y))
-            .weight(0.05);
+            .weight(0.05)
+            .color(SLATEBLUE);
     }
     draw.to_frame(app, &frame).unwrap();
     _model.egui.draw_to_frame(&frame).unwrap();

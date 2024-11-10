@@ -194,7 +194,6 @@ pub fn collide(contacts: &mut Vec<Contact>, body_a: &Body, body_b: &Body) -> i32
 
     if face_b.y > RELATIVE_TOL * separation + ABSOLUTE_TOL * h_b.y {
         axis = Axis::FaceBY;
-        separation = face_b.y;
         normal = if d_b.y > 0.0 { rot_b.col2 } else { -rot_b.col2 };
     }
 

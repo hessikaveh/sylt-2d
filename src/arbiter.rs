@@ -2,7 +2,6 @@ use crate::math_utils::Cross;
 use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
 use std::cell::RefCell;
-use std::mem::swap;
 use std::rc::Rc;
 
 #[derive(Debug, Clone, Copy)]
