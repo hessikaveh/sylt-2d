@@ -114,24 +114,22 @@ fn compute_incident_edge(h: &Vec2, pos: &Vec2, rot: &Mat2x2, normal: &Vec2) -> [
             c2.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
             c2.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
         }
+    } else if n.y.signum() > 0.0 {
+        c1.v = Vec2::new(h.x, h.y);
+        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
+        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
+
+        c2.v = Vec2::new(-h.x, h.y);
+        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
+        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
     } else {
-        if n.y.signum() > 0.0 {
-            c1.v = Vec2::new(h.x, h.y);
-            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge4;
-            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge1;
+        c1.v = Vec2::new(-h.x, -h.y);
+        c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
+        c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
 
-            c2.v = Vec2::new(-h.x, h.y);
-            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge1;
-            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge2;
-        } else {
-            c1.v = Vec2::new(-h.x, -h.y);
-            c1.fp.edges.in_edge_2 = EdgeNumbers::Edge2;
-            c1.fp.edges.out_edge_2 = EdgeNumbers::Edge3;
-
-            c2.v = Vec2::new(h.x, -h.y);
-            c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
-            c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
-        }
+        c2.v = Vec2::new(h.x, -h.y);
+        c2.fp.edges.in_edge_2 = EdgeNumbers::Edge3;
+        c2.fp.edges.out_edge_2 = EdgeNumbers::Edge4;
     }
 
     c1.v = *pos + (*rot * c1.v);

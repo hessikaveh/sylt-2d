@@ -1,6 +1,23 @@
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Neg, Sub};
+
+#[derive(Debug)]
+pub enum MathErrors {
+    NoInverse { matrix: Mat2x2 },
+}
+
+impl Display for MathErrors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MathErrors::NoInverse { matrix } => {
+                write!(f, "No inverse could be found for matrix {}", matrix)
+            }
+        }
+    }
+}
+
+impl std::error::Error for MathErrors {}
 
 #[derive(Debug, Default, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec2 {
@@ -117,7 +134,7 @@ impl Neg for Vec2 {
         }
     }
 }
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Mat2x2 {
     pub col1: Vec2,
     pub col2: Vec2,
@@ -145,16 +162,19 @@ impl Mat2x2 {
         }
     }
 
-    pub fn invert(&self) -> Self {
+    pub fn invert(&self) -> Result<Self, MathErrors> {
         let a = self.col1.x;
         let b = self.col2.x;
         let c = self.col1.y;
         let d = self.col2.y;
         let det = a * d - b * c;
-        assert!(det != 0.0, "Can't invert Matrix with 0 determinant.");
-        Self {
-            col1: Vec2::new(det * d, -det * c),
-            col2: Vec2::new(-det * b, det * a),
+        if det == 0.0 {
+            Err(MathErrors::NoInverse { matrix: *self })
+        } else {
+            Ok(Self {
+                col1: Vec2::new(det * d, -det * c),
+                col2: Vec2::new(-det * b, det * a),
+            })
         }
     }
 
@@ -248,7 +268,7 @@ mod tests {
         //println!("{}", mat1);
         //println!("{}", mat1.invert());
         //println!("{}", mat1.transpose());
-        assert_eq!(mat1.invert().col2.x, 1.0);
+        assert_eq!(mat1.invert().unwrap().col2.x, 1.0);
         assert_eq!(mat1.transpose().col1.y, -1.0);
     }
 

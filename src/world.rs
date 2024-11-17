@@ -1,5 +1,6 @@
 use crate::arbiter::{Arbiter, ArbiterKey};
 use crate::body::Body;
+use crate::errors::Sylt2DErrors;
 use crate::joint::Joint;
 use crate::math_utils::Vec2;
 use std::cell::{Ref, RefCell};
@@ -69,7 +70,7 @@ impl World {
         self.arbiters.clear();
     }
 
-    pub fn broad_phase(&mut self) {
+    pub fn broad_phase(&mut self) -> Result<(), Sylt2DErrors> {
         for i in 0..self.bodies.len() {
             let body_i = self.bodies[i].borrow();
 
@@ -82,28 +83,31 @@ impl World {
                 let key = ArbiterKey::new(&body_i, &body_j);
 
                 if new_arbiter.num_contacts > 0 {
-                    let _ = self
-                        .arbiters
-                        .entry(key)
-                        .and_modify(|arbiter| {
+                    match self.arbiters.entry(key) {
+                        std::collections::hash_map::Entry::Occupied(mut entry) => {
+                            let arbiter = entry.get_mut();
                             arbiter.update(
                                 new_arbiter.contacts.as_ref(),
                                 new_arbiter.num_contacts,
                                 &self.world_context,
-                            )
-                        })
-                        .or_insert(new_arbiter);
+                            )?
+                        }
+                        std::collections::hash_map::Entry::Vacant(entry) => {
+                            entry.insert(new_arbiter);
+                        }
+                    }
                 } else {
                     self.arbiters.remove(&key);
                 }
             }
         }
+        Ok(())
     }
 
-    pub fn step(&mut self, dt: f32) {
+    pub fn step(&mut self, dt: f32) -> Result<(), Sylt2DErrors> {
         let inv_dt = if dt > 0.0 { 1.0 / dt } else { 0.0 };
         // Determine overlapping bodies and update contact points.
-        self.broad_phase();
+        self.broad_phase()?;
 
         // Integrate forces.
         for body in self.bodies.iter() {
@@ -121,7 +125,7 @@ impl World {
         }
 
         for joint in self.joints.iter_mut() {
-            joint.pre_step(&self.world_context, inv_dt);
+            joint.pre_step(&self.world_context, inv_dt)?;
         }
 
         // Perfrom iterations
@@ -144,5 +148,6 @@ impl World {
             body.force = Vec2::default();
             body.torque = 0.0;
         }
+        Ok(())
     }
 }

@@ -311,12 +311,19 @@ fn demo9(model: &mut Model) {
 
 fn update(_app: &App, _model: &mut Model, _update: Update) {
     if _model.is_first_frame {
-        _model.world.step(_model.time_step);
+        let step = _model.world.step(_model.time_step);
+        if let Err(e) = step {
+            eprintln!("Error: {}", e);
+        }
         // Load the initial demo
         load_demo(_model);
         _model.is_first_frame = false;
     }
-    _model.world.step(_model.time_step);
+    let step = _model.world.step(_model.time_step);
+    if let Err(e) = step {
+        eprintln!("Error: {}", e);
+    }
+
     if _model.load_demo_flag {
         load_demo(_model);
         _model.load_demo_flag = false;
@@ -413,10 +420,10 @@ fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event:
 fn key_pressed(_app: &App, model: &mut Model, key: Key) {
     match key {
         Key::Right => {
-            model.world.step(model.time_step);
+            let _ = model.world.step(model.time_step);
         }
         Key::Left => {
-            model.world.step(-model.time_step);
+            let _ = model.world.step(-model.time_step);
         }
         Key::Return => {
             println!("Number of bodies {:?}", model.world.bodies.len());

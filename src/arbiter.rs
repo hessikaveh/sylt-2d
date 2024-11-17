@@ -2,7 +2,25 @@ use crate::math_utils::Cross;
 use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
 use std::cell::RefCell;
+use std::fmt;
 use std::rc::Rc;
+
+#[derive(Debug)]
+pub enum ArbiterErrors {
+    NoOldContactFound,
+    NoNewContactFound,
+}
+
+impl fmt::Display for ArbiterErrors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArbiterErrors::NoOldContactFound => write!(f, "No old contacts found."),
+            ArbiterErrors::NoNewContactFound => write!(f, "No new contacts found."),
+        }
+    }
+}
+
+impl std::error::Error for ArbiterErrors {}
 
 #[derive(Debug, Clone, Copy)]
 pub enum EdgeNumbers {
@@ -116,7 +134,7 @@ impl Arbiter {
         new_contacts: &[Contact],
         num_new_contacts: i32,
         world_context: &WorldContext,
-    ) {
+    ) -> Result<(), ArbiterErrors> {
         let mut merged_contacts = Vec::<Contact>::with_capacity(2);
 
         for new_contact in new_contacts.iter() {
@@ -132,18 +150,20 @@ impl Arbiter {
                     }
                 }
                 if k > -1 {
-                    let c_old = self.contacts[k as usize];
+                    let c_old =
+                        self.contacts[k as usize].ok_or(ArbiterErrors::NoOldContactFound)?;
+                    let mut new_contact_ = new_contact.ok_or(ArbiterErrors::NoNewContactFound)?;
                     if world_context.warm_starting {
-                        new_contact.unwrap().pn = c_old.unwrap().pn;
-                        new_contact.unwrap().pt = c_old.unwrap().pt;
-                        new_contact.unwrap().pnb = c_old.unwrap().pnb;
+                        new_contact_.pn = c_old.pn;
+                        new_contact_.pt = c_old.pt;
+                        new_contact_.pnb = c_old.pnb;
                     } else {
-                        new_contact.unwrap().pn = 0.0;
-                        new_contact.unwrap().pt = 0.0;
-                        new_contact.unwrap().pnb = 0.0;
+                        new_contact_.pn = 0.0;
+                        new_contact_.pt = 0.0;
+                        new_contact_.pnb = 0.0;
                     }
 
-                    merged_contacts.push(*new_contact);
+                    merged_contacts.push(Some(new_contact_));
                 } else {
                     merged_contacts.push(*new_contact);
                 }
@@ -152,6 +172,7 @@ impl Arbiter {
 
         self.contacts = merged_contacts;
         self.num_contacts = num_new_contacts;
+        Ok(())
     }
     pub fn pre_step(&mut self, inv_dt: f32, world_context: &WorldContext) {
         let k_allowed_penetration = 0.01;

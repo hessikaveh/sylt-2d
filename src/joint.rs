@@ -1,3 +1,4 @@
+use crate::errors::Sylt2DErrors;
 use crate::{
     body::Body,
     math_utils::{Cross, Mat2x2, Vec2},
@@ -53,7 +54,11 @@ impl Joint {
         }
     }
 
-    pub fn pre_step(&mut self, world_context: &WorldContext, inv_dt: f32) {
+    pub fn pre_step(
+        &mut self,
+        world_context: &WorldContext,
+        inv_dt: f32,
+    ) -> Result<(), Sylt2DErrors> {
         let mut body_1 = self.body_1.borrow_mut();
         let mut body_2 = self.body_2.borrow_mut();
         let rot_1 = Mat2x2::new_from_angle(body_1.rotation);
@@ -87,7 +92,7 @@ impl Joint {
         let mut k = k1 + k2 + k3;
         k.col1.x += self.softness;
         k.col2.y += self.softness;
-        self.m = k.invert();
+        self.m = k.invert()?;
         let p1 = body_1.position + self.r1;
         let p2 = body_2.position + self.r2;
         let dp = p2 - p1;
@@ -106,6 +111,7 @@ impl Joint {
         } else {
             self.p = Vec2::new(0.0, 0.0);
         }
+        Ok(())
     }
     pub fn apply_impulse(&mut self) {
         let mut body_1 = self.body_1.borrow_mut();
