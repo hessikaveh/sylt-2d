@@ -60,18 +60,18 @@ fn launch_bomb(model: &mut Model) {
     bomb.rotation = random_range(-1.5, 1.5);
     bomb.velocity = bomb.position * -1.5;
     bomb.angular_velocity = random_range(-20.0, 20.0);
-    model.world.add_body(bomb);
+    model.world.add_body(bomb.clone());
 }
 
 fn demo1(_model: &mut Model) {
     // Single box
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
-    _model.world.add_body(body1);
+    _model.world.add_body(body1.clone());
 
     let mut body2 = Body::new(Vec2::new(1.0, 1.0), 200.0);
     body2.position = Vec2::new(0.0, 4.0);
-    _model.world.add_body(body2);
+    _model.world.add_body(body2.clone());
 }
 
 fn demo2(model: &mut Model) {
@@ -80,13 +80,13 @@ fn demo2(model: &mut Model) {
     body1.friction = 0.2;
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     body1.rotation = 0.0;
-    model.world.add_body(body1);
+    model.world.add_body(body1.clone());
 
     let mut body2 = Body::new(Vec2::new(1.0, 1.0), 100.0);
     body2.friction = 0.2;
     body2.position = Vec2::new(9.0, 11.0);
     body2.rotation = 0.0;
-    model.world.add_body(body2);
+    model.world.add_body(body2.clone());
 
     let joint = Joint::new(body1, body2, Vec2::new(0.0, 11.0), &model.world);
     model.world.add_joint(joint);
@@ -97,19 +97,19 @@ fn demo3(model: &mut Model) {
 
     let mut body = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body.position = Vec2::new(0.0, -0.5 * body.width.y);
-    model.world.add_body(body);
+    model.world.add_body(body.clone());
 
     let mut body2 = Body::new(Vec2::new(13.0, 0.25), f32::MAX);
     body2.position = Vec2::new(-2.0, 11.0);
     body2.rotation = -0.25;
-    model.world.add_body(body2);
+    model.world.add_body(body2.clone());
 
     // Additional bodies with varying frictions
     for (i, &friction) in friction_values.iter().enumerate() {
         let mut body = Body::new(Vec2::new(0.5, 0.5), 25.0);
         body.friction = friction;
         body.position = Vec2::new(-7.5 + 2.0 * i as f32, 14.0);
-        model.world.add_body(body);
+        model.world.add_body(body.clone());
     }
 }
 
@@ -118,13 +118,13 @@ fn demo4(model: &mut Model) {
     let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
-    model.world.add_body(ground);
+    model.world.add_body(ground.clone());
 
     for i in 0..10 {
         let mut body = Body::new(Vec2::new(1.0, 1.0), 1.0);
         body.friction = 0.2;
         body.position = Vec2::new(random::<f32>() * 0.2 - 0.1, 0.51 + 1.05 * i as f32);
-        model.world.add_body(body);
+        model.world.add_body(body.clone());
     }
 }
 
@@ -133,7 +133,7 @@ fn demo5(model: &mut Model) {
     let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
-    model.world.add_body(ground);
+    model.world.add_body(ground.clone());
 
     let mut x = Vec2::new(-6.0, 0.75);
     for i in 0..12 {
@@ -142,7 +142,7 @@ fn demo5(model: &mut Model) {
             let mut body = Body::new(Vec2::new(1.0, 1.0), 10.0);
             body.friction = 0.2;
             body.position = y;
-            model.world.add_body(body);
+            model.world.add_body(body.clone());
 
             y.x += 1.125;
         }
@@ -155,23 +155,23 @@ fn demo6(model: &mut Model) {
     // A Teeter
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
-    model.world.add_body(body1);
+    model.world.add_body(body1.clone());
 
     let mut body2 = Body::new(Vec2::new(12.0, 0.25), 10.0);
     body2.position = Vec2::new(0.0, 3.0);
-    model.world.add_body(body2);
+    model.world.add_body(body2.clone());
 
     let mut body3 = Body::new(Vec2::new(0.5, 0.5), 2.0);
     body3.position = Vec2::new(-5.0, 5.0);
-    model.world.add_body(body3);
+    model.world.add_body(body3.clone());
 
     let mut body4 = Body::new(Vec2::new(0.5, 0.5), 2.0);
     body4.position = Vec2::new(-5.5, 5.0);
-    model.world.add_body(body4);
+    model.world.add_body(body4.clone());
 
     let mut body5 = Body::new(Vec2::new(1.0, 1.0), 55.0);
     body5.position = Vec2::new(5.5, 15.0);
-    model.world.add_body(body5);
+    model.world.add_body(body5.clone());
 
     let joint = Joint::new(body1, body2, Vec2::new(0.0, 3.0), &model.world);
     model.world.add_joint(joint);
@@ -181,7 +181,7 @@ fn demo7(model: &mut Model) {
     let mut ground = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
-    model.world.add_body(ground);
+    model.world.add_body(ground.clone());
 
     let num_planks = 15;
     let mass = 10.0;
@@ -198,11 +198,11 @@ fn demo7(model: &mut Model) {
         let mut plank = Body::new(Vec2::new(1.0, 0.25), mass);
         plank.friction = 0.2;
         plank.position = Vec2::new(-8.5 + 1.25 * i as f32, 5.0);
-        model.world.add_body(plank);
+        model.world.add_body(plank.clone());
 
         let mut joint = Joint::new(
-            plank,
-            ground,
+            plank.clone(),
+            ground.clone(),
             Vec2::new(-9.125 + 1.25 * i as f32, 5.0),
             &model.world,
         );
@@ -216,40 +216,40 @@ fn demo7(model: &mut Model) {
 fn demo8(model: &mut Model) {
     let mut b1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     b1.position = Vec2::new(0.0, -0.5 * b1.width.y);
-    model.world.add_body(b1);
+    model.world.add_body(b1.clone());
 
     let mut b = Body::new(Vec2::new(12.0, 0.5), f32::MAX);
     b.position = Vec2::new(-1.5, 10.0);
-    model.world.add_body(b);
+    model.world.add_body(b.clone());
 
     for i in 0..10 {
         let mut domino = Body::new(Vec2::new(0.2, 2.0), 10.0);
         domino.position = Vec2::new(-6.0 + 1.0 * i as f32, 11.125);
         domino.friction = 0.1;
-        model.world.add_body(domino);
+        model.world.add_body(domino.clone());
     }
 
     let mut bb = Body::new(Vec2::new(14.0, 0.5), f32::MAX);
     bb.position = Vec2::new(1.0, 6.0);
     bb.rotation = 0.3;
-    model.world.add_body(bb);
+    model.world.add_body(bb.clone());
 
     let mut b2 = Body::new(Vec2::new(0.5, 3.0), f32::MAX);
     b2.position = Vec2::new(-7.0, 4.0);
-    model.world.add_body(b2);
+    model.world.add_body(b2.clone());
 
     let mut b3 = Body::new(Vec2::new(12.0, 0.25), 10.0);
     b3.position = Vec2::new(-0.9, 1.0);
-    model.world.add_body(b3);
+    model.world.add_body(b3.clone());
 
-    let joint1 = Joint::new(b1, b3, Vec2::new(-2.0, 3.0), &model.world);
+    let joint1 = Joint::new(b1.clone(), b3, Vec2::new(-2.0, 3.0), &model.world);
     model.world.add_joint(joint1);
 
     let mut b4 = Body::new(Vec2::new(0.5, 0.5), 16.0);
     b4.position = Vec2::new(-10.0, 15.0);
     b4.rotation = 0.0;
     b4.friction = 0.2;
-    model.world.add_body(b4);
+    model.world.add_body(b4.clone());
 
     let joint2 = Joint::new(b2, b4, Vec2::new(-7.0, 15.0), &model.world);
     model.world.add_joint(joint2);
@@ -257,14 +257,14 @@ fn demo8(model: &mut Model) {
     let mut b5 = Body::new(Vec2::new(2.0, 2.0), 10.0);
     b5.position = Vec2::new(6.0, 2.5);
     b5.friction = 0.1;
-    model.world.add_body(b5);
+    model.world.add_body(b5.clone());
 
-    let joint3 = Joint::new(b1, b5, Vec2::new(6.0, 2.6), &model.world);
+    let joint3 = Joint::new(b1, b5.clone(), Vec2::new(6.0, 2.6), &model.world);
     model.world.add_joint(joint3);
 
     let mut b6 = Body::new(Vec2::new(2.0, 0.2), 10.0);
     b6.position = Vec2::new(6.0, 3.6);
-    model.world.add_body(b6);
+    model.world.add_body(b6.clone());
 
     let joint4 = Joint::new(b5, b6, Vec2::new(7.0, 3.5), &model.world);
     model.world.add_joint(joint4);
@@ -276,7 +276,7 @@ fn demo9(model: &mut Model) {
     ground.friction = 0.2;
     ground.position = Vec2::new(0.0, -0.5 * ground.width.y);
     ground.rotation = 0.0;
-    model.world.add_body(ground);
+    model.world.add_body(ground.clone());
 
     let mut b1 = ground;
     let mass = 10.0;
@@ -298,9 +298,9 @@ fn demo9(model: &mut Model) {
         pendulum.friction = 0.2;
         pendulum.position = Vec2::new(0.5 + i as f32, y);
         pendulum.rotation = 0.0;
-        model.world.add_body(pendulum);
+        model.world.add_body(pendulum.clone());
 
-        let mut joint = Joint::new(b1, pendulum, Vec2::new(i as f32, y), &model.world);
+        let mut joint = Joint::new(b1, pendulum.clone(), Vec2::new(i as f32, y), &model.world);
         joint.softness = softness;
         joint.bias_factor = bias_factor;
         model.world.add_joint(joint);

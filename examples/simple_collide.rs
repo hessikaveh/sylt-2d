@@ -27,38 +27,13 @@ fn main() {
         let rect_b_position = Vec2::new(10.0, 1.0);
         let rect_b_half_size = Vec2::new(3.0, 2.0); // Width and height of Rectangle B
         let rect_b_rotation = 0.0; // No rotation for Rectangle B
-                                   // Define boxes
-        let box_a = Body {
-            id: 1,
-            position: rect_a_position,
-            rotation: rect_a_rotation,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: rect_a_half_size,
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 2,
-            position: rect_b_position,
-            rotation: rect_b_rotation,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: rect_b_half_size,
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
+        let mut box_a = Body::new(rect_a_half_size, 1.0);
+        box_a.position = rect_a_position;
+        box_a.rotation = rect_a_rotation;
 
+        let mut box_b = Body::new(rect_b_half_size, 1.0);
+        box_b.position = rect_b_position;
+        box_b.rotation = rect_b_rotation;
         // Draw Rectangle A
         add_box(
             &mut grid,
@@ -82,43 +57,6 @@ fn main() {
         // Perform collision detection
         let mut contacts = Vec::new();
         let num_contacts = collide(&mut contacts, &box_a, &box_b);
-        println!("{:?}", contacts);
-        println!("{:?}", num_contacts);
-        println!("\x1b[2j");
-
-        draw_collision_result(&mut grid, &contacts);
-
-        // Display the grid
-        draw_grid(&mut grid);
-
-        let mut body1 = Body::new(Vec2::new(10.0, 2.0), f32::MAX);
-        body1.position = Vec2::new(0.0, -0.05 * body1.width.y);
-
-        let mut body2 = Body::new(Vec2::new(0.1, 0.1), 200.0);
-        body2.position = Vec2::new(0.0, 0.4);
-        let mut contacts = Vec::new();
-        let num_contacts = collide(&mut contacts, &box_a, &box_b);
-        let mut grid = make_grid(100);
-        // Draw Rectangle A
-        add_box(
-            &mut grid,
-            body1.position,
-            body1.width,
-            body1.rotation,
-            'A',
-            rectangle_style_a,
-        );
-
-        // Draw Rectangle B
-        add_box(
-            &mut grid,
-            body2.position,
-            body2.width,
-            body2.rotation,
-            'B',
-            rectangle_style_b,
-        );
-
         println!("{:?}", contacts);
         println!("{:?}", num_contacts);
         println!("\x1b[2j");

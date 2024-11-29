@@ -308,39 +308,12 @@ mod tests {
         let styles = get_styles();
         let mut grid = make_grid(30);
 
-        // Define boxes
         let pos_a = Vec2::new(10.0, 1.0);
         let pos_b = Vec2::new(15.0, 5.0);
-        let box_a = Body {
-            id: 0,
-            position: pos_a,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(1.0, 1.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 1,
-            position: pos_b,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(1.0, 1.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
+        let mut box_a = Body::new(Vec2::new(1.0, 1.0), 1.0);
+        box_a.position = pos_a;
+        let mut box_b = Body::new(Vec2::new(1.0, 1.0), 1.0);
+        box_b.position = pos_b;
 
         // Draw the boxes
         add_box(
@@ -406,36 +379,10 @@ mod tests {
         // Define overlapping boxes
         let pos_a = Vec2::new(11.0, 3.0);
         let pos_b = Vec2::new(12., 2.);
-        let box_a = Body {
-            id: 1,
-            position: pos_a,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(2.0, 2.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 2,
-            position: pos_b,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(2.0, 2.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
+        let mut box_a = Body::new(Vec2::new(2.0, 2.0), 1.0);
+        box_a.position = pos_a;
+        let mut box_b = Body::new(Vec2::new(2.0, 2.0), 1.0);
+        box_b.position = pos_b;
 
         // Draw the boxes
         add_box(
@@ -503,37 +450,13 @@ mod tests {
         // Define overlapping boxes at an angle
         let pos_a = Vec2::new(12.0, 0.0);
         let pos_b = Vec2::new(15.5, 1.0);
-        let box_a = Body {
-            id: 1,
-            position: pos_a,
-            rotation: 45.0_f32.to_radians(),
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(4.0, 4.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 2,
-            position: pos_b,
-            rotation: -45.0_f32.to_radians(),
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(4.0, 4.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
+        let mut box_a = Body::new(Vec2::new(4.0, 4.0), 1.0);
+        box_a.position = pos_a;
+        box_a.rotation = 45.0_f32.to_radians();
 
+        let mut box_b = Body::new(Vec2::new(4.0, 4.0), 1.0);
+        box_b.position = pos_b;
+        box_b.rotation = -45.0_f32.to_radians();
         // Draw the boxes
         add_box(
             &mut grid,
@@ -599,37 +522,13 @@ mod tests {
         // Define overlapping boxes at an angle
         let pos_a = Vec2::new(14.0, 2.0);
         let pos_b = Vec2::new(18.0, 2.0);
-        let box_a = Body {
-            id: 1,
-            position: pos_a,
-            rotation: 45.0_f32.to_radians(),
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(4.0, 4.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 2,
-            position: pos_b,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(4.0, 4.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
+        let mut box_a = Body::new(Vec2::new(4.0, 4.0), 1.0);
+        box_a.position = pos_a;
+        box_a.rotation = 45.0_f32.to_radians();
 
+        let mut box_b = Body::new(Vec2::new(4.0, 4.0), 1.0);
+        box_b.position = pos_b;
+ 
         // Draw the boxes
         add_box(
             &mut grid,
@@ -692,88 +591,4 @@ mod tests {
             num_contacts
         );
     }
-    #[test]
-    fn test_edge_case() {
-        let styles = get_styles();
-        let mut grid = make_grid(20);
-
-        // Define boxes sharing an edge
-        let pos_a = Vec2::new(1.0, 1.0);
-        let pos_b = Vec2::new(5., 1.0);
-        let box_a = Body {
-            id: 1,
-            position: pos_a,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(2.0, 2.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-        let box_b = Body {
-            id: 2,
-            position: pos_b,
-            rotation: 0.0,
-            velocity: Vec2::new(0.0, 0.0),
-            angular_velocity: 0.0,
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-            width: Vec2::new(2.0, 2.0),
-            friction: 0.5,
-            mass: 1.0,
-            inv_mass: 1.0,
-            moi: 1.0,
-            inv_moi: 1.0,
-        };
-
-        // Draw the boxes
-        add_box(
-            &mut grid,
-            pos_a,
-            box_a.width,
-            box_a.rotation,
-            'A',
-            styles[4],
-        );
-        add_box(
-            &mut grid,
-            pos_b,
-            box_b.width,
-            box_b.rotation,
-            'B',
-            styles[6],
-        );
-        let rot_a = Mat2x2::new_from_angle(box_a.rotation);
-        let rot_b = Mat2x2::new_from_angle(box_b.rotation);
-
-        let rot_a_t = rot_a.transpose();
-        let rot_b_t = rot_b.transpose();
-
-        let d_p = pos_b - pos_a;
-        let d_a = rot_a_t * d_p;
-        let d_b = rot_b_t * d_p;
-        add_line(&mut grid, Vec2::new(0.0, 0.0), d_p, '.', styles[7]);
-        add_line(&mut grid, Vec2::new(0.0, 0.0), d_a, '*', styles[4]);
-        add_line(&mut grid, Vec2::new(0.0, 0.0), d_b, '@', styles[6]);
-        // Perform collision detection
-        let mut contacts = Vec::new();
-        let _num_contacts = collide(&mut contacts, &box_a, &box_b);
-        println!("{:?}", contacts);
-        println!("\x1b[2J");
-        draw_collision_result(&mut grid, &contacts);
-        // Draw the grid
-        draw_grid(&mut grid);
-
-        // Assertions to ensure edge case is handled
-        /*         assert!(
-            num_contacts > 0,
-            "Expected contacts, but found {}",
-            num_contacts
-        ); */
     }
-}

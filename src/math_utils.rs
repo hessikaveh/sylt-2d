@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Neg, Sub};
@@ -19,7 +20,7 @@ impl Display for MathErrors {
 
 impl std::error::Error for MathErrors {}
 
-#[derive(Debug, Default, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Debug, Default, PartialOrd, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
@@ -27,11 +28,25 @@ pub struct Vec2 {
 
 impl Hash for Vec2 {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.x.to_bits().hash(state);
-        self.y.to_bits().hash(state);
+        // Hash truncated values to avoid issues with floating-point precision
+        (self.x.to_bits() >> 4).hash(state);
+        (self.y.to_bits() >> 4).hash(state);
+    }
+}
+impl PartialEq for Vec2 {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < f32::EPSILON && (self.y - other.y).abs() < f32::EPSILON
     }
 }
 
+impl Eq for Vec2 {}
+
+pub fn remove_duplicates(vec: Vec<Vec2>) -> Vec<Vec2> {
+    let mut seen = HashSet::new();
+    vec.into_iter()
+        .filter(|item| seen.insert(*item))
+        .collect()
+}
 impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         Self { x, y }
@@ -134,6 +149,13 @@ impl Neg for Vec2 {
         }
     }
 }
+
+impl From<Vec2> for (f32, f32) {
+    fn from(v: Vec2) -> Self {
+        (v.x, v.y)
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Mat2x2 {
     pub col1: Vec2,

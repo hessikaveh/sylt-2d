@@ -1,6 +1,7 @@
 pub mod arbiter;
 pub mod body;
 pub mod collide;
+pub mod collide_polygon;
 pub mod draw;
 pub mod errors;
 pub mod joint;
