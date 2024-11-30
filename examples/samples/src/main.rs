@@ -383,7 +383,7 @@ fn demo10(_model: &mut Model) {
     _model.world.add_body(pentagon_body.clone());
     _model.world.add_body(pawn_head.clone());
     _model.world.add_body(pawn_body.clone());
-    let joint3 = Joint::new(pawn_head, pawn_body, Vec2::new(5.0, 3.6), &_model.world);
+    let joint3 = Joint::new(pawn_head, pawn_body, Vec2::new(5.0, 3.0), &_model.world);
     _model.world.add_joint(joint3);
 
     let joint = Joint::new(body1, pentagon_body, Vec2::new(0.0, 11.0), &_model.world);
