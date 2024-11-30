@@ -206,10 +206,10 @@ impl Body {
         let hw = width.x / 2.0;
         let hh = width.y / 2.0;
         let vertices = vec![
-            Vec2 { x: -hw, y: hh },
             Vec2 { x: hw, y: hh },
-            Vec2 { x: hw, y: -hh },
+            Vec2 { x: -hw, y: hh },
             Vec2 { x: -hw, y: -hh },
+            Vec2 { x: hw, y: -hh },
         ];
 
         let id = BODY_ID_COUNTER.fetch_add(1, Ordering::Relaxed);

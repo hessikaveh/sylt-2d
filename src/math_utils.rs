@@ -43,9 +43,7 @@ impl Eq for Vec2 {}
 
 pub fn remove_duplicates(vec: Vec<Vec2>) -> Vec<Vec2> {
     let mut seen = HashSet::new();
-    vec.into_iter()
-        .filter(|item| seen.insert(*item))
-        .collect()
+    vec.into_iter().filter(|item| seen.insert(*item)).collect()
 }
 impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
@@ -308,7 +306,7 @@ mod tests {
         assert_eq!(res.col1.x, f32::consts::SQRT_2);
         //println!("{}", res);
         let res = mat1 * pos;
-        assert_eq!(res.x, -0.7071067);
+        assert!(res.x - f32::consts::FRAC_1_SQRT_2 < f32::EPSILON);
         //println!("{} * {} = {}", mat1, pos, res);
     }
 }

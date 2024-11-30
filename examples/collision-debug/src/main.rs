@@ -44,7 +44,7 @@ fn model(app: &App) -> Model {
     let egui = Egui::from_window(&window);
     Model {
         _window,
-        demo_index: 0,
+        demo_index: 6,
         egui,
         settings: EguiSettings {
             scale: 30.0,
@@ -142,7 +142,6 @@ fn demo6(_model: &mut Model) {
     _model.bodies.push(box_b.clone());
     let _ = collide(&mut _model.contacts, &box_a, &box_b);
 }
-
 fn demo7(_model: &mut Model) {
     // polygon: A hexagon
     let hexagon: Vec<Vec2> = vec![
@@ -169,6 +168,29 @@ fn demo7(_model: &mut Model) {
     _model.bodies.push(hexagon_body.clone());
     let _ = collide_polygons(&mut _model.contacts, &hexagon_body, &pentagon_body);
 }
+
+fn demo8(_model: &mut Model) {
+    // polygon: A hexagon
+    let hexagon: Vec<Vec2> = vec![
+        Vec2 { x: 0.0, y: 1.0 },    // Top vertex
+        Vec2 { x: -0.87, y: 0.5 },  // Top-left vertex
+        Vec2 { x: -0.87, y: -0.5 }, // Bottom-left vertex
+        Vec2 { x: 0.0, y: -1.0 },   // Bottom vertex
+        Vec2 { x: 0.87, y: -0.5 },  // Bottom-right vertex
+        Vec2 { x: 0.87, y: 0.5 },   // Top-right vertex
+    ];
+    let pos_a = Vec2::new(1.0, 1.0);
+
+    let mut box_a = Body::new(Vec2::new(2.0, 2.0), 1.0);
+    box_a.position = pos_a;
+    box_a.rotation = 45.0_f32.to_radians();
+
+    let hexagon_body = Body::new_polygon(hexagon, 1.0);
+
+    _model.bodies.push(box_a.clone());
+    _model.bodies.push(hexagon_body.clone());
+    let _ = collide_polygons(&mut _model.contacts, &hexagon_body, &box_a);
+}
 fn update(_app: &App, _model: &mut Model, _update: Update) {
     if _model.is_first_frame {
         // Load the initial demo
@@ -192,7 +214,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         egui::ComboBox::from_label("Demo Selection")
             .selected_text(format!("Demo {}", _model.demo_index + 1))
             .show_ui(ui, |ui| {
-                for i in 0..7 {
+                for i in 0..8 {
                     ui.selectable_value(&mut _model.demo_index, i, format!("Demo {}", i + 1));
                 }
             });
@@ -226,6 +248,7 @@ fn load_demo(model: &mut Model) {
         4 => demo5(model),
         5 => demo6(model),
         6 => demo7(model),
+        7 => demo8(model),
         _ => {}
     }
 }
@@ -252,11 +275,11 @@ fn key_pressed(_app: &App, model: &mut Model, key: Key) {
             model.contacts.clear();
             let body1 = model.bodies.first().unwrap();
             let body2 = model.bodies.get(1).unwrap();
-            match body1.shape {
-                Shape::Box => {
+            match (body1.shape, body2.shape) {
+                (Shape::Box, Shape::Box) => {
                     let _ = collide(&mut model.contacts, body1, body2);
                 }
-                Shape::ConvexPolygon => {
+                _ => {
                     let _ = collide_polygons(&mut model.contacts, body1, body2);
                 }
             }

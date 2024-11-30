@@ -83,36 +83,73 @@ fn test_intersection(c0: &ConvexPolygon, c1: &ConvexPolygon) -> bool {
 pub fn clip_polygon(polygon: &ConvexPolygon, clip_polygon: &ConvexPolygon) -> Vec<(Vec2, Vec2)> {
     let mut polygon: ConvexPolygon = ConvexPolygon::new(polygon.get_vertices());
 
+    // This will store the final clipped vertices along with their normals
     let mut clipped: Vec<(Vec2, Vec2)> = Vec::new();
+
+    // Iterate over all edges of the clipping polygon
     for j in 0..clip_polygon.get_num_vertices() {
         let edge_start = clip_polygon.get_vertex(j as isize);
         let edge_normal = clip_polygon.get_normal(j as isize);
-        clipped.clear();
+
+        // Temporary storage for the current iteration
+        let mut current_clipped: Vec<(Vec2, Vec2)> = Vec::new();
+
         let n = polygon.get_num_vertices();
         for i in 0..n {
             let current = polygon.get_vertex(i as isize);
             let next = polygon.get_vertex((i + 1) as isize);
 
+            // Distances from the current and next points to the clipping plane
             let dist_current = edge_normal.dot(current - edge_start) / edge_normal.length();
             let dist_next = edge_normal.dot(next - edge_start) / edge_normal.length();
+
             if dist_current <= 0.0 {
                 // Current point is inside or on the plane
-                clipped.push((current, edge_normal));
+                current_clipped.push((current, edge_normal));
             }
+
             if dist_current * dist_next < 0.0 {
-                // Edge intersects the plane, compute intersection point
+                // Edge intersects the plane; compute intersection point
                 let interp = dist_current / (dist_current - dist_next);
-                clipped.push((current + (next - current) * interp, edge_normal));
+                let intersection = current + (next - current) * interp;
+                current_clipped.push((intersection, edge_normal));
             }
         }
 
-        let clipped_: Vec<Vec2> = clipped.iter().map(|tuple| tuple.0).collect();
+        // Prepare for next iteration
+        let clipped_vertices: Vec<Vec2> = current_clipped.iter().map(|tuple| tuple.0).collect();
+        polygon = ConvexPolygon::new(clipped_vertices);
 
-        polygon = ConvexPolygon::new(clipped_);
+        clipped = current_clipped;
     }
-    clipped
-}
 
+    // Assign normals to clipped vertices based on closest edge of the clipping polygon
+    let mut final_clipped = Vec::new();
+    for (vertex, _) in clipped {
+        let mut closest_normal = Vec2::new(0.0, 0.0);
+        let mut min_distance = f32::MAX;
+
+        for j in 0..clip_polygon.get_num_vertices() {
+            let edge_start = clip_polygon.get_vertex(j as isize);
+            let edge_end = clip_polygon.get_vertex((j + 1) as isize);
+
+            let edge = edge_end - edge_start;
+            let mut normal = Vec2::new(-edge.y, edge.x); // Outward-facing normal
+            normal = normal * (1.0 / normal.length());
+            let to_point = vertex - edge_start;
+            let distance = (to_point.dot(normal)).abs();
+
+            if distance < min_distance {
+                min_distance = distance;
+                closest_normal = normal;
+            }
+        }
+
+        final_clipped.push((vertex, closest_normal));
+    }
+
+    final_clipped
+}
 /// Finds contact points between two intersecting convex polygons.
 ///
 /// # Arguments
@@ -129,7 +166,6 @@ fn find_contact_points(c0: &ConvexPolygon, c1: &ConvexPolygon) -> Vec<Contact> {
     // Clip the current contact points against this edge
     let clipped = clip_polygon(c0, c1);
 
-    println!("Length of array{:?}", clipped.len());
     // If no points remain, polygons are not intersecting
     if clipped.is_empty() {
         return Vec::new();
@@ -146,7 +182,7 @@ fn find_contact_points(c0: &ConvexPolygon, c1: &ConvexPolygon) -> Vec<Contact> {
         let contact_info = ContactInfo {
             position: *point,
             normal: *normal,
-            separation,
+            separation: separation * 0.001,
             feature,
             ..Default::default()
         };

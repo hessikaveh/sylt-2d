@@ -1,6 +1,6 @@
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
-use sylt_2d::body::Body;
+use sylt_2d::body::{Body, Shape};
 use sylt_2d::joint::Joint;
 use sylt_2d::math_utils::{Mat2x2, Vec2};
 use sylt_2d::world::World;
@@ -64,14 +64,40 @@ fn launch_bomb(model: &mut Model) {
 }
 
 fn demo1(_model: &mut Model) {
-    // Single box
+    // Single Shapes Falling
     let mut body1 = Body::new(Vec2::new(100.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     _model.world.add_body(body1.clone());
 
     let mut body2 = Body::new(Vec2::new(1.0, 1.0), 200.0);
-    body2.position = Vec2::new(0.0, 4.0);
+    body2.position = Vec2::new(0.0, 3.0);
     _model.world.add_body(body2.clone());
+
+    // polygon: A hexagon
+    let hexagon: Vec<Vec2> = vec![
+        Vec2 { x: 0.0, y: 1.0 },    // Top vertex
+        Vec2 { x: -0.87, y: 0.5 },  // Top-left vertex
+        Vec2 { x: -0.87, y: -0.5 }, // Bottom-left vertex
+        Vec2 { x: 0.0, y: -1.0 },   // Bottom vertex
+        Vec2 { x: 0.87, y: -0.5 },  // Bottom-right vertex
+        Vec2 { x: 0.87, y: 0.5 },   // Top-right vertex
+    ];
+    // polygon: A pentagon
+    let pentagon: Vec<Vec2> = vec![
+        Vec2 { x: 0.0, y: 1.0 },     // Top vertex
+        Vec2 { x: -0.95, y: 0.31 },  // Top-left vertex
+        Vec2 { x: -0.59, y: -0.81 }, // Bottom-left vertex
+        Vec2 { x: 0.59, y: -0.81 },  // Bottom-right vertex
+        Vec2 { x: 0.95, y: 0.31 },   // Top-right vertex
+    ];
+    let mut pentagon_body = Body::new_polygon(pentagon, 2.0);
+    let mut hexagon_body = Body::new_polygon(hexagon, 2.0);
+    pentagon_body.position = Vec2::new(0.0, 5.0);
+    pentagon_body.friction = 100.0;
+    hexagon_body.position = Vec2::new(5.0, 4.0);
+    hexagon_body.rotation = 45.0;
+    _model.world.add_body(pentagon_body.clone());
+    _model.world.add_body(hexagon_body.clone());
 }
 
 fn demo2(model: &mut Model) {
@@ -309,6 +335,40 @@ fn demo9(model: &mut Model) {
     }
 }
 
+// Simple polygons
+fn demo10(_model: &mut Model) {
+    // polygon: A hexagon
+    let hexagon: Vec<Vec2> = vec![
+        Vec2 { x: 0.0, y: 1.0 },    // Top vertex
+        Vec2 { x: -0.87, y: 0.5 },  // Top-left vertex
+        Vec2 { x: -0.87, y: -0.5 }, // Bottom-left vertex
+        Vec2 { x: 0.0, y: -1.0 },   // Bottom vertex
+        Vec2 { x: 0.87, y: -0.5 },  // Bottom-right vertex
+        Vec2 { x: 0.87, y: 0.5 },   // Top-right vertex
+    ];
+    // polygon: A pentagon
+    let pentagon: Vec<Vec2> = vec![
+        Vec2 { x: 0.0, y: 1.0 },     // Top vertex
+        Vec2 { x: -0.95, y: 0.31 },  // Top-left vertex
+        Vec2 { x: -0.59, y: -0.81 }, // Bottom-left vertex
+        Vec2 { x: 0.59, y: -0.81 },  // Bottom-right vertex
+        Vec2 { x: 0.95, y: 0.31 },   // Top-right vertex
+    ];
+    let mut body1 = Body::new(Vec2::new(1000.0, 20.0), f32::MAX);
+    body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
+    _model.world.add_body(body1.clone());
+
+    let mut pentagon_body = Body::new_polygon(pentagon, 2.0);
+    let mut hexagon_body = Body::new_polygon(hexagon, 2.0);
+    pentagon_body.position = Vec2::new(0.0, 5.0);
+    pentagon_body.friction = 100.0;
+    hexagon_body.position = Vec2::new(5.0, 4.0);
+    hexagon_body.rotation = 45.0;
+
+    _model.world.add_body(pentagon_body.clone());
+    _model.world.add_body(hexagon_body.clone());
+}
+
 fn update(_app: &App, _model: &mut Model, _update: Update) {
     if _model.is_first_frame {
         let step = _model.world.step(_model.time_step);
@@ -340,7 +400,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
     egui.set_elapsed_time(_update.since_start);
     let ctx = egui.begin_frame();
     let demo_names = [
-        "Demo 1: A Single Box",
+        "Demo 1: Simple Shapes Falling",
         "Demo 2: Simple Pendulum",
         "Demo 3: Varying Friction Coefficients",
         "Demo 4: Randomized Stacking",
@@ -349,6 +409,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         "Demo 7: A Suspension Bridge",
         "Demo 8: Dominos",
         "Demo 9: Multi-pendulum",
+        "Demo 10: Simple Polygons",
     ];
     egui::Window::new("Settings").show(&ctx, |ui| {
         // Dropdown for selecting the demo
@@ -409,6 +470,7 @@ fn load_demo(model: &mut Model) {
         6 => demo7(model),
         7 => demo8(model),
         8 => demo9(model),
+        9 => demo10(model),
         _ => {}
     }
 }
@@ -440,11 +502,28 @@ fn view(app: &App, _model: &Model, frame: Frame) {
     let settings = &_model.settings;
     draw.background().color(SLATEGREY);
     for (num, body) in _model.world.iter_bodies().enumerate() {
-        draw.rect()
-            .x_y(body.position.x, body.position.y)
-            .w_h(body.width.x, body.width.y)
-            .rotate(body.rotation)
-            .color(if num == 0 { DARKSEAGREEN } else { ORCHID });
+        match body.shape {
+            Shape::Box => {
+                draw.rect()
+                    .x_y(body.position.x, body.position.y)
+                    .w_h(body.width.x, body.width.y)
+                    .rotate(body.rotation)
+                    .color(if num == 0 { DARKSEAGREEN } else { ORCHID });
+            }
+            Shape::ConvexPolygon => {
+                let tuples: Vec<(f32, f32)> = body
+                    .get_polygon()
+                    .get_vertices()
+                    .into_iter()
+                    .map(Into::into)
+                    .collect();
+                draw.polygon()
+                    .color(if num == 0 { DARKSEAGREEN } else { ORCHID })
+                    .x_y(body.position.x, body.position.y)
+                    .rotate(body.rotation)
+                    .points(tuples);
+            }
+        }
     }
 
     for (_, arbiter) in _model.world.arbiters.iter() {
