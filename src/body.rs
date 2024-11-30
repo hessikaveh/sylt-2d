@@ -80,6 +80,17 @@ impl ConvexPolygon {
         Vec2 { x: cx, y: cy }
     }
 
+    // Scale the polygon with a factor
+    pub fn scale(&mut self, factor: f32) {
+        let centroid = self.centroid();
+
+        // Translate to origin, scale, then translate back
+        self.vertices = self
+            .vertices
+            .iter()
+            .map(|v| ((*v - centroid) * factor) + centroid)
+            .collect();
+    }
     /// Calculates the moment of inertia about the centroid.
     pub fn moi(&self) -> f32 {
         let n = self.get_num_vertices();

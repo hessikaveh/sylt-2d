@@ -1,6 +1,6 @@
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
-use sylt_2d::body::{Body, Shape};
+use sylt_2d::body::{Body, ConvexPolygon, Shape};
 use sylt_2d::joint::Joint;
 use sylt_2d::math_utils::{Mat2x2, Vec2};
 use sylt_2d::world::World;
@@ -335,18 +335,9 @@ fn demo9(model: &mut Model) {
     }
 }
 
-// Simple polygons
+// A Pawn and the pendulum
 fn demo10(_model: &mut Model) {
-    // polygon: A hexagon
-    let hexagon: Vec<Vec2> = vec![
-        Vec2 { x: 0.0, y: 1.0 },    // Top vertex
-        Vec2 { x: -0.87, y: 0.5 },  // Top-left vertex
-        Vec2 { x: -0.87, y: -0.5 }, // Bottom-left vertex
-        Vec2 { x: 0.0, y: -1.0 },   // Bottom vertex
-        Vec2 { x: 0.87, y: -0.5 },  // Bottom-right vertex
-        Vec2 { x: 0.87, y: 0.5 },   // Top-right vertex
-    ];
-    // polygon: A pentagon
+    // A Pawn and the pendulum
     let pentagon: Vec<Vec2> = vec![
         Vec2 { x: 0.0, y: 1.0 },     // Top vertex
         Vec2 { x: -0.95, y: 0.31 },  // Top-left vertex
@@ -354,19 +345,49 @@ fn demo10(_model: &mut Model) {
         Vec2 { x: 0.59, y: -0.81 },  // Bottom-right vertex
         Vec2 { x: 0.95, y: 0.31 },   // Top-right vertex
     ];
+    let mut pawn_head = ConvexPolygon::new(vec![
+        Vec2 { x: 0.0, y: 0.4 },   // Top center (head)
+        Vec2 { x: -0.4, y: 0.0 },  // Upper left
+        Vec2 { x: -0.2, y: -0.4 }, // Lower left (neck)
+        Vec2 { x: 0.2, y: -0.4 },  // Lower right (neck)
+        Vec2 { x: 0.4, y: 0.0 },   // Upper right
+    ]);
+    pawn_head.scale(2.0);
+
+    // Define the bottom part (body and base) as a convex polygon
+    let mut pawn_trunk = ConvexPolygon::new(vec![
+        Vec2 { x: -0.8, y: 0.8 },  // Base left
+        Vec2 { x: -0.6, y: 0.0 },  // Mid-body left
+        Vec2 { x: -0.3, y: -0.8 }, // Bottom left
+        Vec2 { x: 0.3, y: -0.8 },  // Bottom right
+        Vec2 { x: 0.6, y: 0.0 },   // Mid-body right
+        Vec2 { x: 0.8, y: 0.8 },   // Base right
+    ]);
+    pawn_trunk.scale(2.0);
     let mut body1 = Body::new(Vec2::new(1000.0, 20.0), f32::MAX);
     body1.position = Vec2::new(0.0, -0.5 * body1.width.y);
     _model.world.add_body(body1.clone());
 
-    let mut pentagon_body = Body::new_polygon(pentagon, 2.0);
-    let mut hexagon_body = Body::new_polygon(hexagon, 2.0);
-    pentagon_body.position = Vec2::new(0.0, 5.0);
-    pentagon_body.friction = 100.0;
-    hexagon_body.position = Vec2::new(5.0, 4.0);
-    hexagon_body.rotation = 45.0;
+    let mut pentagon_body = Body::new_polygon(pentagon, 55.0);
+    let mut pawn_head = Body::new_polygon(pawn_head.get_vertices(), 10.0);
+    let mut pawn_body = Body::new_polygon(pawn_trunk.get_vertices(), 10.0);
+    pentagon_body.friction = 0.2;
+    pentagon_body.position = Vec2::new(-9.0, 8.0);
+    pentagon_body.rotation = 0.0;
 
+    pawn_body.position = Vec2::new(5.0, 4.0);
+    pawn_head.position = Vec2::new(
+        pawn_body.position.x,
+        pawn_body.position.y + 0.5 * pawn_body.width.y + 0.5 * pawn_head.width.y,
+    );
     _model.world.add_body(pentagon_body.clone());
-    _model.world.add_body(hexagon_body.clone());
+    _model.world.add_body(pawn_head.clone());
+    _model.world.add_body(pawn_body.clone());
+    let joint3 = Joint::new(pawn_head, pawn_body, Vec2::new(5.0, 3.6), &_model.world);
+    _model.world.add_joint(joint3);
+
+    let joint = Joint::new(body1, pentagon_body, Vec2::new(0.0, 11.0), &_model.world);
+    _model.world.add_joint(joint);
 }
 
 fn update(_app: &App, _model: &mut Model, _update: Update) {
@@ -409,7 +430,7 @@ fn update(_app: &App, _model: &mut Model, _update: Update) {
         "Demo 7: A Suspension Bridge",
         "Demo 8: Dominos",
         "Demo 9: Multi-pendulum",
-        "Demo 10: Simple Polygons",
+        "Demo 10: A Pawn and the pendulum",
     ];
     egui::Window::new("Settings").show(&ctx, |ui| {
         // Dropdown for selecting the demo
