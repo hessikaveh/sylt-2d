@@ -1,3 +1,5 @@
+use crate::body::Shape;
+use crate::collide_polygon::collide_polygons;
 use crate::math_utils::Cross;
 use crate::world::WorldContext;
 use crate::{body::Body, collide::collide, math_utils::Vec2};
@@ -119,7 +121,10 @@ impl Arbiter {
             body_1.swap(&body_2);
         };
 
-        let num_contacts = collide(&mut contacts, &body_1.borrow(), &body_2.borrow());
+        let num_contacts = match (body_1.borrow().shape, body_2.borrow().shape) {
+            (Shape::Box, Shape::Box) => collide(&mut contacts, &body_1.borrow(), &body_2.borrow()),
+            _ => collide_polygons(&mut contacts, &body_1.borrow(), &body_2.borrow()),
+        };
         let friction = f32::sqrt(body_1.borrow().friction * body_2.borrow().friction);
         Self {
             body1: body_1,
