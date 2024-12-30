@@ -38,6 +38,22 @@ jobs:
           total_tests=$(grep -Eo 'running [0-9]+ tests?' test_output.txt | grep -Eo '[0-9]+' | awk '{s+=$1} END {print s}')
           passed_tests=$(grep -c '^test .* \.\.\. ok$' test_output.txt)
           failed_tests=$(grep -c '^test .* \.\.\. FAILED$' test_output.txt)
+          # Debug: Print failed_tests value
+          echo "Failed tests: $failed_tests"
+
+          # Check if failed_tests is a number
+          if [[ ! "$failed_tests" =~ ^[0-9]+$ ]]; then
+            echo "Error: failed_tests is not a valid number"
+            exit 1
+          fi
+
+          # Conditional check for failed tests
+          if [ "$failed_tests" -gt 0 ]; then
+            echo "There were failed tests."
+            # Additional handling for failed tests
+          else
+            echo "No tests failed."
+          fi
           # Summarize failed tests
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
