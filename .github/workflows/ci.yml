@@ -40,13 +40,12 @@ jobs:
           failed_tests=$(grep -c '^test .* \.\.\. FAILED$' test_output.txt)
 
           # Ensure failed_tests is either zero or a valid number
-          if [[ ! "$failed_tests" =~ ^[0-9]+$ ]]; then
+          if [ -z "$failed_tests" ] || ! echo "$failed_tests" | grep -qE '^[0-9]+$'; then
             echo "Invalid value for failed_tests. Setting it to 0."
             failed_tests=0  # Default to 0 if it's invalid
           else
             echo "failed_tests is a valid number: $failed_tests"
           fi
-
           # Summarize failed tests
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
