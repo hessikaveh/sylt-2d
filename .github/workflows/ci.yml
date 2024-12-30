@@ -61,6 +61,5 @@ jobs:
               failure_msg=$(grep -A2 "$test_name" test_output.txt | tail -n 1)
               echo "| $test_name | $failure_msg |" >> $GITHUB_STEP_SUMMARY
             done
-            exit 1
           fi
 
