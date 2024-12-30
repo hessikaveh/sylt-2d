@@ -34,38 +34,21 @@ jobs:
 
       - name: Analyze Test Results
         run: |
-
-          # Initialize counters
+          # Extract test results
           total_tests=$(grep -Eo 'running [0-9]+ tests?' test_output.txt | grep -Eo '[0-9]+' | awk '{s+=$1} END {print s}')
           passed_tests=$(grep -c '^test .* \.\.\. ok$' test_output.txt)
           failed_tests=$(grep -c '^test .* \.\.\. FAILED$' test_output.txt)
-
-          # Handle cases with no tests or doc-tests
-          total_tests=${total_tests:-0}
-          passed_tests=${passed_tests:-0}
-          failed_tests=${failed_tests:-0}
-
-          # Extract final summary line (if present)
-          summary_line=$(grep 'test result:' test_output.txt || echo "")
-          if [ -n "$summary_line" ]; then
-            summary_passed=$(echo "$summary_line" | grep -o '[0-9]\+ passed' | grep -o '[0-9]\+')
-            summary_failed=$(echo "$summary_line" | grep -o '[0-9]\+ failed' | grep -o '[0-9]\+')
-            passed_tests=$((passed_tests + ${summary_passed:-0}))
-            failed_tests=$((failed_tests + ${summary_failed:-0}))
-          fi
-
-          # Summarize results
+          # Summarize failed tests
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
           echo "|-------------|--------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| $total_tests | $passed_tests | $failed_tests |" >> $GITHUB_STEP_SUMMARY
 
-          # Fail the workflow if any tests failed
           if [ "$failed_tests" -gt 0 ]; then
             echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
             echo "| Test Name | Failure Message |" >> $GITHUB_STEP_SUMMARY
             echo "|-----------|-----------------|" >> $GITHUB_STEP_SUMMARY
-            grep '^test .* \.\.\. FAILED$' test_output.txt | while read -r line; do
+            grep '^test .* ... FAILED' test_output.txt | while read -r line; do
               test_name=$(echo "$line" | awk '{print $2}')
               failure_msg=$(grep -A2 "$test_name" test_output.txt | tail -n 1)
               echo "| $test_name | $failure_msg |" >> $GITHUB_STEP_SUMMARY
