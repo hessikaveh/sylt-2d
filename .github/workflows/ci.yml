@@ -33,20 +33,39 @@ jobs:
         run: cargo build --verbose
 
       - name: Run tests
-        run: cargo test --verbose -- --format json > test_results.json
+        run: cargo test --verbose | tee test_output.txt
 
-      - name: Upload Test Results
+      - name: Upload Test Output
         uses: actions/upload-artifact@v3
         with:
-          name: test_results-${{ matrix.toolchain }}
-          path: test_results.json
+          name: test_output-${{ matrix.toolchain }}
+          path: test_output.txt
 
       - name: Summarize Test Results
-        if: always() # Ensure this runs even if tests fail
+        if: always()
         run: |
-          jq -r '.summary' test_results.json | tee $GITHUB_STEP_SUMMARY
-          jq -r '.tests[] | select(.result == "failed") | "\n## Failed Test: \(.name)\n\(.stdout)\n\(.stderr)\n"' test_results.json >> $GITHUB_STEP_SUMMARY
+          total_tests=$(grep -Eo 'running [0-9]+ tests?' test_output.txt | grep -Eo '[0-9]+' | awk '{s+=$1} END {print s}')
+          passed_tests=$(grep -c '^test .* \.\.\. ok$' test_output.txt)
+          failed_tests=$(grep -c '^test .* \.\.\. FAILED$' test_output.txt)
 
-      - name: Fail if tests failed
-        if: failure() && contains(matrix.toolchain, 'stable') # Only fail on stable
+          echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| $total_tests | $passed_tests | $failed_tests |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$failed_tests" -gt 0 ]; then
+            echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
+            grep '^test .* ... FAILED' test_output.txt | while read -r line; do
+              test_name=$(echo "$line" | awk '{print $2}')
+              # Capture the output related to the failed test
+              failure_output=$(grep -A 1000 "$test_name" test_output.txt | grep -v "$test_name" | grep -v '^--$' | head -n 20) # Limit to 20 lines
+              echo "### $test_name" >> $GITHUB_STEP_SUMMARY
+              echo "```" >> $GITHUB_STEP_SUMMARY
+              echo "$failure_output" >> $GITHUB_STEP_SUMMARY
+              echo "```" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
+      - name: Fail if tests failed (Stable Only)
+        if: failure() && matrix.toolchain == 'stable'
         run: exit 1
