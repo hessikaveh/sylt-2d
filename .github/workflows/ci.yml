@@ -44,8 +44,7 @@ jobs:
       - name: Summarize Test Results
         if: always()
         run: |
-          # Use a more robust approach to count tests and results
-          total_tests=$(grep "^test " test_output.txt | wc -l)
+          total_tests=$(grep "^test " test_output.txt | grep -v "^test result:" | wc -l)
           passed_tests=$(grep "^test .* \.\.\. ok$" test_output.txt | wc -l)
           failed_tests=$(grep "^test .* \.\.\. FAILED$" test_output.txt | wc -l)
 
