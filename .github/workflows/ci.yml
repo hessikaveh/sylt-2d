@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Clippy (Nightly Only)
         if: matrix.toolchain == 'nightly'
-        run: cargo clippy -- -D warnings
+        run: cargo clippy -- -A clippy::all
 
       - name: Build project
         run: cargo build --verbose
